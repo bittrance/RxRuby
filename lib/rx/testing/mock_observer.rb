@@ -6,9 +6,7 @@ require 'rx/testing/recorded'
 
 module Rx
 
-  class MockObserver
-    include Observer
-
+  class MockObserver < ObserverBase
     attr_reader :messages
 
     def initialize(scheduler)

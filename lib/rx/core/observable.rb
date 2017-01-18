@@ -19,6 +19,7 @@ module Rx
           _subscribe Observer.configure
         end
       when 1
+        raise ArgumentError.new 'Must pass observer as single argument' unless args[0].is_a? ObserverBase
         _subscribe args[0]
       when 3
         _subscribe Observer.configure {|o|
