@@ -4,9 +4,11 @@ require 'rx'
 should_run = true
 
 source = Rx::Observable.if(
-    lambda { return should_run },
+    lambda { puts 'Condition'; return should_run },
     Rx::Observable.return(42)
 )
+
+puts 'Before'
 
 subscription = source.subscribe(
     lambda {|x|
@@ -19,6 +21,8 @@ subscription = source.subscribe(
         puts 'Completed'
     })
 
+# => Before
+# => Condition
 # => Next: 42
 # => Completed
 
@@ -26,10 +30,12 @@ subscription = source.subscribe(
 should_run = false
 
 source = Rx::Observable.if(
-    lambda { return should_run },
+    lambda { puts 'Condition'; return should_run },
     Rx::Observable.return(42),
     Rx::Observable.return(56)
 )
+
+puts 'Before'
 
 subscription = source.subscribe(
     lambda {|x|
@@ -42,5 +48,7 @@ subscription = source.subscribe(
         puts 'Completed'
     })
 
+# => Before
+# => Condition
 # => Next: 56
 # => Completed
