@@ -273,7 +273,16 @@ module Rx
         subscribe(new_observer)        
       end
     end
+        alias_method :find_all_with_index, :select_with_index
+    
+    # Filters the elements of an observable sequence based on a negated predicate.
+    def reject(&block)
+      select_with_index {|x, _| !block.call x }
+    end
 
-    alias_method :find_all_with_index, :select_with_index
+    # Filters the elements of an observable sequence based on a negated predicate by incorporating the element's index.
+    def reject_with_index(&block)
+      select_with_index {|x, i| !block.call(x, i) }
+    end
   end
 end
