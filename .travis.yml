@@ -2,14 +2,17 @@ language: ruby
 sudo: false
 dist: trusty
 cache: bundler
-rvm:
-  - 1.9.3
-  - 2.0.0
-  - 2.1.2
-  - 2.2.0
-  - 2.3.0
-  - jruby-19mode # JRuby in 1.9 mode
-  - rbx-2.6
-  - rbx-3.82
+matrix:
+  include:
+    - rvm: 1.9.3
+    - rvm: 2.0.0
+    - rvm: 2.1.2
+    - rvm: 2.2.0
+    - rvm: 2.3.0
+    - rvm: jruby-19mode # JRuby in 1.9 mode
+    - rvm: rbx-2.6
+      env: BUNDLER_VERSION='-v ~>1.10.5'
+    - rvm: rbx-3.82
+      env: BUNDLER_VERSION='-v ~>1.11.2'
 before_install:
-  - ruby --version | grep -qF 'rubinius 2.6' || gem update bundler
+  - gem install bundler $BUNDLER_VERSION
