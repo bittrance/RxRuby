@@ -113,7 +113,7 @@ module Rx
       end
 
       if err
-        observer.on_next err
+        observer.on_error err
       elsif hv
         observer.on_next v
         observer.on_completed
