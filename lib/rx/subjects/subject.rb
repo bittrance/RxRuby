@@ -40,7 +40,7 @@ module Rx
         end 
       end
 
-      os.each {|o| @gate.synchronize { o.on_completed } } if os
+      os.each {|o| o.on_completed } if os
     end
 
     # Notifies all subscribed observers with the error.
@@ -59,7 +59,7 @@ module Rx
         end         
       end
 
-      os.each {|o| @gate.synchronize { o.on_error error } } if os
+      os.each {|o| o.on_error error } if os
     end
 
     # Notifies all subscribed observers with the value.
@@ -70,7 +70,7 @@ module Rx
         os = @observers.clone unless @stopped
       end
 
-      os.each {|o| @gate.synchronize { o.on_next value } } if os      
+      os.each {|o| o.on_next value } if os      
     end
 
     # Subscribes an observer to the subject.
