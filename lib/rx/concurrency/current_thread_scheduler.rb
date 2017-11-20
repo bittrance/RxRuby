@@ -14,11 +14,9 @@ module Rx
 
     include Singleton
 
-    @@thread_local_queue = nil
-
     # Gets a value that indicates whether the caller must call a Schedule method.
     def self.schedule_required?
-      @@thread_local_queue.nil?
+      Thread.current[:queue].nil?
     end
 
     # Schedules an action to be executed after dueTime.
@@ -28,18 +26,18 @@ module Rx
       dt = self.now.to_i + Scheduler.normalize(due_time)
       si = ScheduledItem.new self, state, dt, &action
 
-      local_queue = self.class.queue
+      local_queue = Thread.current[:queue]
 
       unless local_queue
         local_queue = PriorityQueue.new
         local_queue.push si
 
-        self.class.queue = local_queue
+        Thread.current[:queue] = local_queue
 
         begin
           self.class.run_trampoline local_queue
         ensure
-          self.class.queue = nil
+          Thread.current[:queue] = nil
         end
       else
         local_queue.push si
@@ -51,14 +49,6 @@ module Rx
     private
 
     class << self
-      def queue
-        @@thread_local_queue
-      end
-
-      def queue=(new_queue)
-        @@thread_local_queue = new_queue
-      end
-
       def run_trampoline(queue)
         while item = queue.shift
           unless item.cancelled?
