@@ -30,10 +30,6 @@ module HistoricalVirtualSchedulerTestHelper
     assert_equal(@start, @scheduler.now)
   end
 
-  def test_clock
-    assert_equal @start, @scheduler.clock
-  end
-
   # Relative Scheduling
 
   def test_relative_with_state
