@@ -11,7 +11,7 @@ class TestObservableCreation < Minitest::Test
       xs = Rx::Observable.if(
         lambda { called = true; true },
         scheduler.create_cold_observable(
-          on_next(100, scheduler.clock),
+          on_next(100, scheduler.now),
           on_completed(200)
         )
       )

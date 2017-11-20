@@ -19,8 +19,8 @@ module Rx
     # Schedules an action to be executed at due_time.
     def schedule_at_absolute_with_state(state, due_time, action)
       raise 'action cannot be nil' unless action
-      
-      due_time = clock + 1 if due_time <= clock
+
+      due_time = now + 1 if due_time <= now
 
       super(state, due_time, action)
     end

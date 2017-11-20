@@ -22,7 +22,7 @@ module Rx
     def subscribe(observer)
       raise 'observer cannot be nil' unless observer
 
-      subscriptions.push(TestSubscription.new @scheduler.clock)
+      subscriptions.push(TestSubscription.new @scheduler.now)
       index = subscriptions.length - 1
 
       d = CompositeSubscription.new
@@ -37,7 +37,7 @@ module Rx
       end
 
       return Subscription.create do
-        subscriptions[index] = TestSubscription.new(subscriptions[index].subscribe, @scheduler.clock)
+        subscriptions[index] = TestSubscription.new(subscriptions[index].subscribe, @scheduler.now)
         d.unsubscribe
       end
     end
