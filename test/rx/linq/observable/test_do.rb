@@ -55,7 +55,7 @@ class TestOperatorDo < Minitest::Test
         on_error(100, 1)
       ).do(nil, lambda { |e| raise @err })
     end
-    assert_messages [on_error(S7BSCRIBED + 100, @err)], res.messages
+    assert_messages [on_error(SUBSCRIBED + 100, @err)], res.messages
   end
 
   def test_do_with_on_completed
@@ -63,7 +63,7 @@ class TestOperatorDo < Minitest::Test
     @scheduler.configure do
       @scheduler.create_cold_observable(
         on_completed(100)
-      ).do(nil, nil, lambda { :done })
+      ).do(nil, nil, lambda { messages << :done })
     end
     assert_equal [:done], messages
   end
