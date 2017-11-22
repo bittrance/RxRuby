@@ -1,5 +1,7 @@
 module Rx
   module Observable
+    # Invokes the observer's methods for each message in the source sequence.
+    # This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
     def do(observer_or_on_next = nil, on_error_func = nil, on_completed_func = nil)
       if block_given?
         on_next_func = Proc.new
