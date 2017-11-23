@@ -77,6 +77,34 @@ class TestOperatorDo < Minitest::Test
     assert_messages [on_error(SUBSCRIBED + 100, @err)], res.messages
   end
 
+  def test_do_with_observer
+    mock = Rx::MockObserver.new(@scheduler)
+    res = @scheduler.configure do
+      @scheduler.create_cold_observable(
+        on_next(100, 1),
+        on_completed(200)
+      ).do(mock)
+    end
+
+    expected = [
+      on_next(SUBSCRIBED + 100, 1),
+      on_completed(SUBSCRIBED + 200)
+    ]
+    assert_messages expected, mock.messages
+    assert_messages res.messages, mock.messages
+  end
+
+  def test_do_on_error_with_observer
+    mock = Rx::MockObserver.new(@scheduler)
+    @scheduler.configure do
+      @scheduler.create_cold_observable(
+        on_error(100, @err)
+      ).do(mock)
+    end
+
+    assert_messages [on_error(SUBSCRIBED + 100, @err)], mock.messages
+  end
+
   def test_do_error_propagation
     expected = RuntimeError.new
     actual = nil
