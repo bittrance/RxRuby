@@ -15,31 +15,36 @@ module Rx
         on_completed_func = observer_or_on_next.method(:on_completed)
       end
       AnonymousObservable.new do |observer|
-        subscribe(
-          lambda {|x|
+        new_obs = Rx::Observer.configure do |o|
+          o.on_next do |x|
             begin
               on_next_func && on_next_func.call(x)
             rescue => e
               observer.on_error e
             end
             observer.on_next x
-          },
-          lambda {|err|
+          end
+
+          o.on_error do |err|
             begin
               on_error_func && on_error_func.call(err)
             rescue => e
               observer.on_error e
             end
             observer.on_error err
-          },
-          lambda {
+          end
+
+          o.on_completed do
             begin
               on_completed_func && on_completed_func.call
             rescue => e
               observer.on_error e
             end
             observer.on_completed
-          })
+          end
+        end
+
+        subscribe new_obs
       end
     end
   end
