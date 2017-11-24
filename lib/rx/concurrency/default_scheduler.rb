@@ -26,7 +26,7 @@ module Rx
         d.subscription = action.call self, state unless d.unsubscribed?
       end
 
-      CompositeSubscription.new [d, Subscription.create { t.exit }]
+      d
     end
 
     # Schedules an action to be executed after dueTime
@@ -45,7 +45,7 @@ module Rx
         }
       end
 
-      CompositeSubscription.new [d, Subscription.create { t.exit }]         
+      d
     end
   end
 end

@@ -5,14 +5,17 @@ require "#{File.dirname(__FILE__)}/../../test_helper"
 class TestObservableSynchronization < Minitest::Test
   include Rx::ReactiveTest
 
+  def setup
+    @scheduler = Rx::TestScheduler.new
+  end
+
   def test_subscribe_on
-    scheduler = Rx::TestScheduler.new
-    mock = Rx::MockObserver.new scheduler
+    mock = Rx::MockObserver.new @scheduler
     Rx::Observable.just(1)
-      .subscribe_on(scheduler)
+      .subscribe_on(@scheduler)
       .subscribe(mock)
     assert_equal 0, mock.messages.length
-    scheduler.advance_by 100
+    @scheduler.advance_by 100
     assert_equal 2, mock.messages.length
   end
 
@@ -22,5 +25,24 @@ class TestObservableSynchronization < Minitest::Test
 
   def test_subscribe_on_current_thread_scheduiler_does_not_raise
     Rx::Observable.just(1).subscribe_on(Rx::CurrentThreadScheduler.instance).subscribe
+  end
+
+  def test_subscribe_on_default_scheduler_with_merging
+    observer = @scheduler.create_observer
+    Rx::Observable.of(Rx::Observable.from([1, 2]), Rx::Observable.from([3, 4]))
+      .subscribe_on(Rx::DefaultScheduler.instance)
+      .merge_all
+      .subscribe(observer)
+
+    await_array_length(observer.messages, 5)
+
+    expected = [
+      on_next(0, 1),
+      on_next(0, 2),
+      on_next(0, 3),
+      on_next(0, 4),
+      on_completed(0)
+    ]
+    assert_messages expected, observer.messages
   end
 end
