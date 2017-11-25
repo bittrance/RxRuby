@@ -17,7 +17,7 @@ class TestOperatorAmb < Minitest::Test
     res = @scheduler.configure do
       left.amb(right)
     end
-    
+
     if winner == :left
       left_event.time += SUBSCRIBED
       assert_messages [left_event], res.messages
@@ -53,5 +53,25 @@ class TestOperatorAmb < Minitest::Test
 
   def test_amb_right_on_completed_wins
     run_amb_test(:right, on_completed(200), on_completed(100))
+  end
+
+  def thread_observable(side)
+    Rx::Observable.create do |o|
+      Thread.new do
+        sleep 0.01
+        3.times { o.on_next side }
+        o.on_completed
+      end
+    end
+  end
+
+  def test_amb_concurrency
+    left = thread_observable(:left)
+    right = thread_observable(:right)
+    mock = Rx::MockObserver.new(@scheduler)
+    left.amb(right).subscribe(mock)
+    await_array_minimum_length(mock.messages, 4)
+    types = mock.messages.select {|m| m.value.on_next? }.map {|m| m.value.value }.uniq
+    assert_equal 1, types.size # i.e. there should not be both :left and :right
   end
 end
