@@ -63,7 +63,17 @@ module Rx
 
       for i in 0..expected.length - 1
         assert (expected[i] == actual[i])
-      end      
+      end
+    end
+
+    def await_array_length(array, expected, interval = 0.05)
+      sleep (expected * interval) * 0.9
+      deadline = Time.now + interval * (expected + 1)
+      while Time.now < deadline
+        return if array.length == expected
+        sleep interval / 10
+      end
+      flunk "Array expected to be #{expected} but was #{array.size}"
     end
 
     class OnNextPredicate
@@ -88,7 +98,7 @@ module Rx
         other && other.on_error? && @action.call(other.error)
       end
       alias_method :eql?, :==
-    end    
+    end
 
   end
 end
