@@ -54,24 +54,30 @@ class TestOperatorAmb < Minitest::Test
   def test_amb_right_on_completed_wins
     run_amb_test(:right, on_completed(200), on_completed(100))
   end
+end
 
-  def thread_observable(side)
-    Rx::Observable.create do |o|
-      Thread.new do
-        sleep 0.01
-        3.times { o.on_next side }
-        o.on_completed
-      end
-    end
+class TestConcurrencyAmb  < Minitest::Test
+  include Rx::AsyncTesting
+  include Rx::ReactiveTest
+
+  def setup
+    @observer = Rx::TestScheduler.new.create_observer
   end
 
   def test_amb_concurrency
-    left = thread_observable(:left)
-    right = thread_observable(:right)
-    mock = Rx::MockObserver.new(@scheduler)
-    left.amb(right).subscribe(mock)
-    await_array_minimum_length(mock.messages, 4)
-    types = mock.messages.select {|m| m.value.on_next? }.map {|m| m.value.value }.uniq
+    left = async_observable(*[on_next(100, :left)] * 3)
+    right = async_observable(*[on_next(100, :right)] * 3)
+    left.amb(right).subscribe(@observer)
+    await_array_minimum_length(@observer.messages, 3)
+    types = @observer.messages.select {|m| m.value.on_next? }.map {|m| m.value.value }.uniq
     assert_equal 1, types.size # i.e. there should not be both :left and :right
+  end
+
+  def test_observable_amb_concurrency
+    observables = 10.times.map { |n| async_observable(*[on_next(100, "thread-#{n}")] * 3) }
+    Rx::Observable.amb(*observables).subscribe(@observer)
+    await_array_minimum_length(@observer.messages, 3)
+    types = @observer.messages.select {|m| m.value.on_next? }.map {|m| m.value.value }.uniq
+    assert_equal 1, types.size
   end
 end
