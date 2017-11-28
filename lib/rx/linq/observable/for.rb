@@ -1,12 +1,14 @@
 module Rx
   class << Observable
-    def for(sources, result_selector = nil)
-      result_selector ||= lambda {|*args| args}
-      enum = ThreadedEnumerator.new {|y|
-        sources.each {|v|
-          y << result_selector.call(v)
+    def for(sources, &transform)
+      raise ArgumentError.new 'sources must be enumerable' unless sources.respond_to? :each
+      enum = if block_given?
+        ThreadedEnumerator.new {|y|
+          sources.each {|v| y << yield(v) }
         }
-      }
+      else
+        ThreadedEnumerator.new(sources)
+      end
       Observable.concat(enum)
     end
   end

@@ -2,7 +2,7 @@ require 'test_helper'
 
 class TestOperatorRepeat < Minitest::Test
   include Rx::AsyncTesting
-  include Rx::ReactiveTest
+  include Rx::MarbleTesting
 
   def setup
     @scheduler = Rx::TestScheduler.new
@@ -11,39 +11,30 @@ class TestOperatorRepeat < Minitest::Test
   end
 
   def test_repeat
-    res = @scheduler.configure do
-      @scheduler.create_cold_observable(
-        on_next(100, 1),
-        on_next(200, 2),
-        on_completed(300)
-      ).repeat(2)
-    end
+    source      = cold('  -12|')
+    expected    = msgs('---12-12|')
+    source_subs = subs('  ^  (!^)  !')
 
-    expected = [
-      on_next(SUBSCRIBED + 100, 1),
-      on_next(SUBSCRIBED + 200, 2),
-      on_next(SUBSCRIBED + 400, 1),
-      on_next(SUBSCRIBED + 500, 2),
-      on_completed(SUBSCRIBED + 600)
-    ]
-    assert_messages expected, res.messages
+    actual = scheduler.configure { source.repeat(2) }
+
+    assert_msgs expected, actual
+    assert_subs source_subs, source
   end
 
   def test_repeat_stops_with_on_error
-    res = @scheduler.configure do
-      @scheduler.create_cold_observable(
-        on_error(100, @err)
-      ).repeat(2)
-    end
-    expected = [
-      on_error(SUBSCRIBED + 100, @err)
-    ]
-    assert_messages expected, res.messages
+    source      = cold('  -12#')
+    expected    = msgs('---12#')
+    source_subs = subs('  ^  !')
+
+    actual = scheduler.configure { source.repeat(2) }
+
+    assert_msgs expected, actual
+    assert_subs source_subs, source
   end
 
   def test_repeat_throws_argument_error_on_bad_count
     assert_raises(ArgumentError) do
-      @scheduler.create_cold_observable(
+      scheduler.create_cold_observable(
         on_completed(100)
       ).repeat(nil)
     end
