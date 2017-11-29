@@ -1,22 +1,19 @@
 # Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 require 'test_helper'
-require 'rx/subscriptions/helpers/await_helpers'
 
 class TestDefaultScheduler < Minitest::Test
-  include AwaitHelpers
+  include Rx::AsyncTesting
 
   def setup
     @scheduler = Rx::DefaultScheduler.instance
   end
 
-  INTERVAL = 0.05
-
   def test_schedule_with_state
     state = []
     task  = ->(_, s) { s << 1 }
     @scheduler.schedule_with_state(state, task)
-    await_array_length(state, 1, INTERVAL)
+    await_array_length(state, 1)
 
     assert_equal([1], state)
   end
@@ -25,7 +22,7 @@ class TestDefaultScheduler < Minitest::Test
     state = []
     task  = ->(_, s) { s << 1 }
     @scheduler.schedule_relative_with_state(state, 0.05, task)
-    await_array_length(state, 1, INTERVAL)
+    await_array_length(state, 1, 0.09)
 
     assert_equal([1], state)
   end
@@ -34,7 +31,7 @@ class TestDefaultScheduler < Minitest::Test
     state = []
     id = Thread.current.object_id
     @scheduler.schedule -> { state << Thread.current.object_id }
-    await_array_length(state, 1, INTERVAL)
+    await_array_length(state, 1)
 
     refute_equal([id], state)
   end
