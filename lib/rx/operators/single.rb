@@ -380,7 +380,7 @@ module Rx
     end
 
     def enumerator_repeat_times(num, value)
-      Enumerator.new do |y|
+      ThreadedEnumerator.new do |y|
         num.times do |i|
           y << value
         end
@@ -388,7 +388,7 @@ module Rx
     end
 
     def enumerator_repeat_infinitely(value)
-      Enumerator.new do |y|
+      ThreadedEnumerator.new do |y|
         while true
           y << value
         end
