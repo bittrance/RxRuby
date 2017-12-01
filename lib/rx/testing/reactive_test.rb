@@ -66,16 +66,6 @@ module Rx
       end
     end
 
-    def await_array_length(array, expected, interval = 0.05)
-      sleep (expected * interval) * 0.9
-      deadline = Time.now + interval * (expected + 1)
-      while Time.now < deadline
-        return if array.length == expected
-        sleep interval / 10
-      end
-      flunk "Array expected to be #{expected} but was #{array.size}"
-    end
-
     class OnNextPredicate
 
       def initialize(&action)
