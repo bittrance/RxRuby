@@ -10,6 +10,12 @@ module Rx
     ERROR = Object.new
     DONE = Object.new
 
+    if RUBY_ENGINE == 'jruby'
+      def self.new(*args, &block)
+        Enumerator.new(*args, &block)
+      end
+    end
+
     # ThreadedEnumerator helper class
     class Yielder
       def initialize(queue, condition)
@@ -30,12 +36,12 @@ module Rx
     # receives a yielder object, but not both. Note that the block or enumerable
     # will be iterated immediately once making it possible to prepare the iterator
     # e.g. when reading from a file or a socket.
-    def initialize(source = nil, &block)
-      raise ArgumentError, 'Will not accept both source and block' if source && block_given?
+    def initialize(source_or_size_hint = nil, &block)
+      raise TypeError, 'Size hinting not supported' if source_or_size_hint && block_given?
       @condition = ConditionVariable.new
       @queue = Queue.new
       @done = false
-      setup_yielder(source, &block)
+      setup_yielder(source_or_size_hint, &block)
     end
 
     # Receive the next item from the enumerator or any exception thrown from the
