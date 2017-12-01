@@ -56,7 +56,7 @@ module Rx
     end
 
     def test_argument_error_on_both_block_and_source
-      assert_raises(ArgumentError) { ThreadedEnumerator.new([]) { } }
+      assert_raises(TypeError) { ThreadedEnumerator.new([]) { } }
     end
   end
 
