@@ -11,8 +11,6 @@ module Rx
 
     include Scheduler
 
-    attr_reader :clock
-
     def initialize(initial_clock)
       @clock = initial_clock.to_i
       @queue = PriorityQueue.new
@@ -21,7 +19,7 @@ module Rx
 
     # Gets the scheduler's notion of current time.
     def now
-      clock
+      @clock
     end
 
     # Gets whether the scheduler is enabled to run work.
@@ -56,7 +54,7 @@ module Rx
     # Schedules an action to be executed.
     def schedule_with_state(state, action)
       raise 'action cannot be nil' unless action
-      schedule_at_absolute_with_state(state, clock, action)
+      schedule_at_absolute_with_state(state, @clock, action)
     end
 
     # Schedules an action to be executed at due_time.
@@ -100,8 +98,8 @@ module Rx
 
     # Advances the scheduler's clock to the specified time, running all work till that point.
     def advance_to(time)
-      due_to_clock = time<=>clock
-      raise 'Time is out of range' if due_to_clock < 0 
+      due_to_clock = time<=>@clock
+      raise 'Time is out of range' if due_to_clock < 0
 
       return if due_to_clock == 0
 
@@ -130,7 +128,7 @@ module Rx
     def advance_by(time)
       dt = @clock + time
 
-      due_to_clock = dt<=>clock
+      due_to_clock = dt<=>@clock
       raise 'Time is out of range' if due_to_clock < 0
 
       return if due_to_clock == 0

@@ -17,15 +17,15 @@ module Rx
     end
 
     def on_next(value)
-      messages.push(Recorded.new(@scheduler.clock, Notification.create_on_next(value)))
+      messages.push(Recorded.new(@scheduler.now, Notification.create_on_next(value)))
     end
 
     def on_error(error)
-      messages.push(Recorded.new(@scheduler.clock, Notification.create_on_error(error)))
+      messages.push(Recorded.new(@scheduler.now, Notification.create_on_error(error)))
     end
 
     def on_completed
-      messages.push(Recorded.new(@scheduler.clock, Notification.create_on_completed))
+      messages.push(Recorded.new(@scheduler.now, Notification.create_on_completed))
     end
   end
 end

@@ -164,7 +164,7 @@ class TestObservableCreation < Minitest::Test
         invoked += 1
 
         xs = scheduler.create_cold_observable(
-          on_next(100, scheduler.clock),
+          on_next(100, scheduler.now),
           on_completed(200)
         )
         xs
@@ -172,26 +172,26 @@ class TestObservableCreation < Minitest::Test
     end
 
     msgs = [on_next(300, 200), on_completed(400)]
-    assert_messages msgs, res.messages    
+    assert_messages msgs, res.messages
 
     assert_equal 1, invoked
 
-    assert_subscriptions [subscribe(200, 400)], xs.subscriptions 
+    assert_subscriptions [subscribe(200, 400)], xs.subscriptions
   end
 
   def test_defer_error
-    scheduler = Rx::TestScheduler.new 
+    scheduler = Rx::TestScheduler.new
 
     invoked = 0
     xs = nil
     err = RuntimeError.new
 
-    res = scheduler.configure do 
+    res = scheduler.configure do
       Rx::Observable.defer do
         invoked += 1
 
         xs = scheduler.create_cold_observable(
-          on_next(100, scheduler.clock),
+          on_next(100, scheduler.now),
           on_error(200, err)
         )
         xs
@@ -207,17 +207,17 @@ class TestObservableCreation < Minitest::Test
   end
 
   def test_defer_unsubscribe
-    scheduler = Rx::TestScheduler.new 
+    scheduler = Rx::TestScheduler.new
 
     invoked = 0
     xs = nil
 
-    res = scheduler.configure do 
+    res = scheduler.configure do
       Rx::Observable.defer do
         invoked += 1
 
         xs = scheduler.create_cold_observable(
-          on_next(100, scheduler.clock),
+          on_next(100, scheduler.now),
           on_next(200, invoked),
           on_next(1100, 1000)
         )
