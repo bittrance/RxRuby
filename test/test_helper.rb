@@ -3,8 +3,9 @@ if ENV['COVERAGE']
 
   SimpleCov.start do
     coverage_dir '.coverage'
-    add_filter 'test/'
-  end
+    add_filter do |f|
+      !%r{/lib/rx}.match(f.filename)
+    end  end
 end
 
 require 'minitest/autorun'
