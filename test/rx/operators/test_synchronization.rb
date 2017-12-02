@@ -3,6 +3,7 @@
 require "#{File.dirname(__FILE__)}/../../test_helper"
 
 class TestObservableSynchronization < Minitest::Test
+  include Rx::AsyncTesting
   include Rx::ReactiveTest
 
   def setup
