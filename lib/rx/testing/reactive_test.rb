@@ -53,8 +53,7 @@ module Rx
       assert_equal expected.length, actual.length, "The size of messages differ"
 
       for i in 0..expected.length - 1
-        assert_equal expected[i].time, actual[i].time, "The messages[#{i}].time differ"
-        assert_equal expected[i].value, actual[i].value, "The messages[#{i}].value differ"
+        assert_equal expected[i], actual[i], "The messages[#{i}] differ"
       end
     end
 
@@ -62,7 +61,7 @@ module Rx
       assert_equal expected.length, actual.length
 
       for i in 0..expected.length - 1
-        assert (expected[i] == actual[i])
+        assert_equal expected[i], actual[i], "subscriptions[#{i}] differs"
       end
     end
 
