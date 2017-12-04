@@ -122,6 +122,7 @@ module Rx
 
     # Merges elements from all inner observable sequences into a single observable sequence, limiting the number of concurrent subscriptions to inner sequences.
     def merge_concurrent(max_concurrent = 1)
+      raise ArgumentError.new "Expected #{max_concurrent} to be an integer" unless max_concurrent.is_a? Integer
       AnonymousObservable.new do |observer|
         gate = Monitor.new
         q = []
@@ -136,10 +137,8 @@ module Rx
 
           new_obs = Observer.configure do |o|
             o.on_next {|x| gate.synchronize { observer.on_next x } }
-            
             o.on_error {|err| gate.synchronize { observer.on_error err } }
-            
-            o.on_completed do 
+            o.on_completed do
               group.delete subscription
               gate.synchronize do
                 if q.length > 0
@@ -153,7 +152,9 @@ module Rx
             end
           end
 
-          xs.subscribe new_obs
+          d = xs.subscribe new_obs
+          subscription.subscription = d
+          d
         end
 
         inner_obs = Observer.configure do |o|
