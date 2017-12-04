@@ -185,8 +185,7 @@ module Rx
       AnonymousObservable.new do |observer|
         gate = Monitor.new
         stopped = false
-        m = SingleAssignmentSubscription.new
-        group = CompositeSubscription.new [m]
+        group = CompositeSubscription.new
 
         new_obs = Observer.configure do |o|
           o.on_next do |inner_source|
@@ -194,10 +193,8 @@ module Rx
             group << inner_subscription
 
             inner_obs = Observer.configure do |io|
-              io.on_next {|x| gate.synchronize { observer.on_next x } }
-              
-              io.on_error {|err| gate.synchronize { observer.on_error err } }
-              
+              io.on_next { |x| gate.synchronize { observer.on_next x } }
+              io.on_error { |err| gate.synchronize { observer.on_error err } }
               io.on_completed do
                 group.delete inner_subscription
                 gate.synchronize { observer.on_completed } if stopped && group.length == 1
@@ -215,7 +212,7 @@ module Rx
           end
         end
 
-        subscribe new_obs
+        group << subscribe(new_obs)
       end
     end
 
