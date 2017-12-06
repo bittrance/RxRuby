@@ -71,7 +71,7 @@ module Rx
     # Continues an observable sequence that is terminated by an exception of the specified type with the observable sequence produced by the handler or
     # continues an observable sequence that is terminated by an exception with the next observable sequence.
     def rescue_error(other = nil, &action)
-      return Observable.rescue_error(other) if other && !block_given?
+      return Observable.rescue_error(self, other) if other && !block_given?
       raise ArgumentError.new 'Invalid arguments' if other.nil? && !block_given?
 
       AnonymousObservable.new do |observer|
