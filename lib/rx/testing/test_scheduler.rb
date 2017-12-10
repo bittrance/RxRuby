@@ -12,15 +12,15 @@ module Rx
   # Virtual time scheduler used for testing applications and libraries built using Reactive Extensions.
   class TestScheduler < VirtualTimeScheduler
 
-    def initialize
+    def initialize(increment_on_simultaneous = true)
+      @increment_on_simultaneous = increment_on_simultaneous
       super(0)
     end
 
     # Schedules an action to be executed at due_time.
     def schedule_at_absolute_with_state(state, due_time, action)
       raise 'action cannot be nil' unless action
-      
-      due_time = clock + 1 if due_time <= clock
+      due_time = clock + 1 if due_time <= clock && @increment_on_simultaneous
 
       super(state, due_time, action)
     end
