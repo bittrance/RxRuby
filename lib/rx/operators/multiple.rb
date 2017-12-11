@@ -308,12 +308,13 @@ module Rx
         other_subscription = SingleAssignmentSubscription.new
 
         open = false
+        other_completed = false
         gate = Monitor.new
 
         source_obs = Observer.configure do |o|
           o.on_next {|x| observer.on_next x if open }
           o.on_error(&observer.method(:on_error))
-          o.on_completed { observer.on_completed if open }
+          o.on_completed { observer.on_completed if open || other_completed }
         end
 
         other_obs = Observer.configure do |o|
@@ -323,6 +324,7 @@ module Rx
           end
 
           o.on_error(&observer.method(:on_error))
+          o.on_completed { other_completed = true }
         end
 
         source_subscription.subscription = synchronize(gate).subscribe(source_obs)
