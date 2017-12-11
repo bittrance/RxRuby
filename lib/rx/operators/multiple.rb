@@ -346,6 +346,7 @@ module Rx
 
         source_obs = Observer.configure do |o|
           o.on_next do |inner_source|
+            has_latest = true
             id = 0
 
             gate.synchronize do
@@ -357,14 +358,25 @@ module Rx
 
             inner_obs = Observer.configure do |io|
               io.on_next {|x| gate.synchronize { observer.on_next x if latest_num == id } }
-              io.on_error do |err| 
-                gate.synchronize do 
+
+              io.on_error do |err|
+                d.unsubscribe
+                gate.synchronize do
                   has_latest = false
                   observer.on_error err if latest_num == id
                 end
               end
+
+              io.on_completed do
+                d.unsubscribe
+                gate.synchronize do
+                  has_latest = false
+                  observer.on_completed if latest_num == id && stopped
+                end
+              end
             end
 
+            inner_subscription.subscription = d
             d.subscription = inner_source.subscribe inner_obs
           end
 
