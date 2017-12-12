@@ -617,15 +617,17 @@ module Rx
                 observer.on_next(result_selector.call(*res))
               rescue => e
                 observer.on_error e
+                break
               end
-            elsif enumerable_select_with_index(is_done) {|x, j| j != i } .all?
+            end
+            if queues.each_with_index.any? { |q, j| q.empty? && is_done[j] }
               observer.on_completed
             end
           end
 
           done = lambda do |i|
             is_done[i] = true
-            observer.on_completed if is_done.all?
+            observer.on_completed if queues[i].empty?
           end
 
           gate = Monitor.new
