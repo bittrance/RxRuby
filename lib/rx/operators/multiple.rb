@@ -613,7 +613,11 @@ module Rx
           next_action = lambda do |i|
             if queues.all? {|q| q.length > 0 }
               res = queues.map {|q| q.shift }
-              observer.on_next(result_selector.call(*res))
+              begin
+                observer.on_next(result_selector.call(*res))
+              rescue => e
+                observer.on_error e
+              end
             elsif enumerable_select_with_index(is_done) {|x, j| j != i } .all?
               observer.on_completed
             end
