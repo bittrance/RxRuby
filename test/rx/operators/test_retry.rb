@@ -1,69 +1,27 @@
 require 'test_helper'
 
 class TestOperatorRetry < Minitest::Test
-  include Rx::ReactiveTest
-
-  def setup
-    @scheduler = Rx::TestScheduler.new
-    @observer = @scheduler.create_observer
-    @err = RuntimeError.new
-    @left_completing = @scheduler.create_cold_observable(
-      on_next(100, 1),
-      on_completed(200)
-    )
-    @left_erroring = @scheduler.create_cold_observable(
-      on_next(100, 1),
-      on_error(200, @err)
-    )
-  end
+  include Rx::MarbleTesting
 
   def test_retries_when_left_erroring
-    res = @scheduler.configure do
-      @left_erroring.retry(2)
-    end
+    source      = cold('  -12#')
+    expected    = msgs('---12-12#')
+    source_subs = subs('  ^  (!^)  !')
 
-    expected = [
-      on_next(SUBSCRIBED + 100, 1),
-      on_next(SUBSCRIBED + 300, 1),
-      on_error(SUBSCRIBED + 400, @err)
-    ]
-    assert_messages expected, res.messages
+    actual = scheduler.configure { source .retry(2) }
+
+    assert_msgs expected, actual
+    assert_subs source_subs, source
   end
-  
+
   def test_does_not_retry_without_error
-    res = @scheduler.configure do
-      @left_completing.retry(2)
-    end
+    source      = cold('  -12|')
+    expected    = msgs('---12|')
+    source_subs = subs('  ^  !')
 
-    expected = [
-      on_next(SUBSCRIBED + 100, 1),
-      on_completed(SUBSCRIBED + 200)
-    ]
-    assert_messages expected, res.messages
-  end
-  
-  def retry_infinitely
-    subscription = Rx::Observable.raise_error(@err)
-      .retry_infinitely
-      .subscribe_on(Rx::DefaultScheduler.instance)
-      .subscribe(@observer)
-    await_array_minimum_length(@observer.messages, 10)
-    subscription.unsubscribe
-    expected = ([
-      on_error(SUBSCRIBED, 1)
-    ] * 10).flatten
-    assert_messages expected, @observer.messages.take(10)
-  end
-  
-  def retry_infinitely_without_error
-    res = @scheduler.configure do
-      @left_completing.retry_infinitely
-    end
+    actual = scheduler.configure { source.retry(2) }
 
-    expected = [
-      on_next(SUBSCRIBED + 100, 1),
-      on_completed(SUBSCRIBED + 200)
-    ]
-    assert_messages expected, res.messages
+    assert_msgs expected, actual
+    assert_subs source_subs, source
   end
 end
