@@ -10,11 +10,18 @@ module Rx
 
     def msgs(events, values = {})
       time = 0
+      increment = 100
       events.chars.map do |event|
         message = case event
         when ' '
           next
         when '-'
+          nil
+        when '('
+          increment = 0
+          nil
+        when ')'
+          increment = 100
           nil
         when '|'
           on_completed(time)
@@ -23,17 +30,24 @@ module Rx
         else
           on_next(time, values[event.to_sym] || event)
         end
-        time += 100
+        time += increment
         message
       end.compact
     end
 
     def subs(events)
       time = 0
+      increment = 100
       subscribe_time = nil
       result = events.chars.map do |event|
         sub = case event
         when ' ', '-'
+          nil
+        when '('
+          increment = 0
+          nil
+        when ')'
+          increment = 100
           nil
         when '^'
           subscribe_time = time
@@ -42,7 +56,7 @@ module Rx
           st, subscribe_time = subscribe_time, nil
           subscribe(st, time)
         end
-        time += 100
+        time += increment
         sub
       end.compact
       if subscribe_time
