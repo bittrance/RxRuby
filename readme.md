@@ -81,7 +81,7 @@ class ArrayObserver
   end
 end
 
-observable = ArrayObservable [1,2]
+observable = ArrayObservable.new([1,2])
 observer = ArrayObserver.new(observable)
 # 1
 # 2
