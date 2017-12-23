@@ -103,84 +103,11 @@ module Rx
         d1.subscription = subscribe new_obs
         subscription
       end
-    end  
+    end
 
     # Merges two observable sequences into one observable sequence by using the selector function whenever one of the observable sequences produces an element.
     def combine_latest(other, &result_selector)
-      AnonymousObservable.new do |observer|
-        has_left = false
-        has_right = false
-
-        left = nil
-        right = nil
-
-        left_done = false
-        right_done = false
-
-        left_subscription = SingleAssignmentSubscription.new
-        right_subscription = SingleAssignmentSubscription.new
-
-        gate = Monitor.new
-
-        left_obs = Observer.configure do |o|
-          o.on_next do |l|
-            has_left = true
-            left = l
-
-            if has_right
-              res = nil
-              begin
-                res = result_selector.call left, right
-              rescue => e
-                observer.on_error e
-                break
-              end
-              observer.on_next res
-            end
-
-            observer.on_completed if right_done
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            left_done = true
-            observer.on_completed if right_done
-          end
-        end
-
-        right_obs = Observer.configure do |o|
-          o.on_next do |r|
-            has_right = true
-            right = r
-
-            if has_left
-              res = nil
-              begin
-                res = result_selector.call left, right
-              rescue => e
-                observer.on_error e
-                break
-              end
-              observer.on_next res
-            end
-
-            observer.on_completed if left_done
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            right_done = true
-            observer.on_completed if left_done
-          end
-        end
-
-        left_subscription.subscription = synchronize(gate).subscribe(left_obs)
-        right_subscription.subscription = other.synchronize(gate).subscribe(right_obs)
-
-        CompositeSubscription.new [left_subscription, right_subscription]
-      end
+      Observable.combine_latest(self, other, &result_selector)
     end
 
     # Concatenates the second observable sequence to the first observable sequence upon successful termination of the first.

@@ -1,5 +1,25 @@
 require 'test_helper'
 
+class TestCombineLatest < Minitest::Test
+  include Rx::MarbleTesting
+
+  def test_apply_selector_before_emission
+    left         = cold('  -123--|')
+    right        = cold('  ----4-|')
+    expected     = msgs('------7-|')
+    left_subs    = subs('--^-----!')
+    right_subs   = subs('--^-----!')
+
+    actual = scheduler.configure do
+      left.combine_latest(right) { |*values| values.map(&:to_i).inject(0, :+).to_s }
+    end
+
+    assert_msgs expected, actual
+    assert_subs left_subs, left
+    assert_subs right_subs, right
+  end
+end
+
 class TestObservableCombineLatest < Minitest::Test
   include Rx::MarbleTesting
 
