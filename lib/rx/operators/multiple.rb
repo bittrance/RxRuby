@@ -532,7 +532,11 @@ module Rx
       end
 
       # Merges elements from all observable sequences in the given enumerable sequence into a single observable sequence, limiting the number of concurrent subscriptions to inner sequences, and using the specified scheduler for enumeration of and subscription to the sources.
-      def merge_concurrent(max_concurrent, scheduler = CurrentThreadScheduler.instance, *args)
+      def merge_concurrent(max_concurrent, *args)
+        scheduler = CurrentThreadScheduler.instance
+        if args.size > 0 && Scheduler === args[0]
+          scheduler = args.shift
+        end
         Observable.from_array(args, scheduler).merge_concurrent(max_concurrent)
       end
 
