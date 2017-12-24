@@ -36,6 +36,7 @@ module Rx
     def initialize(observer)
       @observer = observer
       @m = SingleAssignmentSubscription.new
+      # @m = BlockingAssignmentSubscription.new
 
       config = ObserverConfiguration.new
       config.on_next(&method(:on_next_core))
@@ -54,6 +55,9 @@ module Rx
       @m.unsubscribe
     end
 
+    def await(timeout)
+      @m.await(timeout)
+    end
   end
 end
 
