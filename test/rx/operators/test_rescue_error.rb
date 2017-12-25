@@ -51,6 +51,14 @@ class TestOperatorRescueError < Minitest::Test
     assert_subs left_subs, left
   end
 
+  def test_resfuse_right_and_block
+    left       = cold('  -#')
+    right      = cold('   -1|')
+    assert_raises(ArgumentError) do
+      left.rescue_error(right) {|_| Rx::Observable.empty() }
+    end
+  end
+
   def test_left_completes_so_right_is_not_consulted
     left       = cold('  -1|')
     right      = cold('    -2|')
