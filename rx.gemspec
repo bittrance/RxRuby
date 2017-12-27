@@ -17,7 +17,7 @@ Gem::Specification.new do |gem|
   gem.license       = 'Apache License, v2.0'
 
   gem.add_development_dependency 'codecov'
-  gem.add_development_dependency 'rake'
   gem.add_development_dependency 'minitest'
+  gem.add_development_dependency 'rake', '= 12.2.0'
   gem.add_development_dependency 'simplecov'
 end
