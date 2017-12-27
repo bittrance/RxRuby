@@ -34,13 +34,13 @@ module Rx
       raise 'observer cannot be nil' unless observer
 
       @observers.push observer
-      subscriptions.push (TestSubscription.new @scheduler.clock)
+      subscriptions.push (TestSubscription.new @scheduler.now)
 
       index = subscriptions.length - 1
 
-      Subscription.create do 
+      Subscription.create do
         @observers.delete observer
-        subscriptions[index] = TestSubscription.new(subscriptions[index].subscribe, @scheduler.clock)
+        subscriptions[index] = TestSubscription.new(subscriptions[index].subscribe, @scheduler.now)
       end
     end
   end
