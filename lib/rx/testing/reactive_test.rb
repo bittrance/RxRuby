@@ -50,30 +50,11 @@ module Rx
     end
 
     def assert_messages(expected, actual)
-      assert_equal expected.length, actual.length, "The size of messages differ"
-
-      for i in 0..expected.length - 1
-        assert_equal expected[i].time, actual[i].time, "The messages[#{i}].time differ"
-        assert_equal expected[i].value, actual[i].value, "The messages[#{i}].value differ"
-      end
+      assert_equal expected, actual, "Message records differ (#{expected.length}/#{actual.length})"
     end
 
     def assert_subscriptions(expected, actual)
-      assert_equal expected.length, actual.length
-
-      for i in 0..expected.length - 1
-        assert (expected[i] == actual[i])
-      end
-    end
-
-    def await_array_length(array, expected, interval = 0.05)
-      sleep (expected * interval) * 0.9
-      deadline = Time.now + interval * (expected + 1)
-      while Time.now < deadline
-        return if array.length == expected
-        sleep interval / 10
-      end
-      flunk "Array expected to be #{expected} but was #{array.size}"
+      assert_equal expected, actual, "Subscription records differ (#{expected.length}/#{actual.length})"
     end
 
     class OnNextPredicate
