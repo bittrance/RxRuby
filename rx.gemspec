@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.version       = Rx::VERSION
   gem.license       = 'Apache License, v2.0'
 
-  gem.add_development_dependency 'coveralls'
+  gem.add_development_dependency 'codecov'
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'minitest'
   gem.add_development_dependency 'simplecov'
