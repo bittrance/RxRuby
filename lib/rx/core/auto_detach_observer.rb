@@ -35,6 +35,7 @@ module Rx
 
     def initialize(observer)
       @observer = observer
+      @m = SingleAssignmentSubscription.new
 
       config = ObserverConfiguration.new
       config.on_next(&method(:on_next_core))
@@ -45,17 +46,40 @@ module Rx
     end
 
     def subscription=(new_subscription)
-      @m ||= SingleAssignmentSubscription.new
       @m.subscription = new_subscription
     end
 
     def unsubscribe
       super
-      @m.unsubscribe if @m
+      @m.unsubscribe
+    end
+  end
+  
+  class AwaitableObserver < AutoDetachObserver
+    def initialize(observer)
+      super
+      @completed = false
+      @condition = ConditionVariable.new
+    end
+
+    def subscription=(new_subscription)
+      blocker = Subscription.create do
+        @completed = true
+        @condition.signal
+      end
+      super CompositeSubscription.new([new_subscription, blocker])
     end
 
     def await(timeout)
-      @m.await(timeout)
+      raise RuntimeError.new 'Cannot await before subscription' unless subscription
+      gate = Mutex.new
+      deadline = Time.now + timeout
+      until Time.now >= deadline || @completed
+        gate.synchronize do
+          @condition.wait(gate, deadline - Time.now) unless @completed
+        end
+      end
+      @completed
     end
   end
 end
