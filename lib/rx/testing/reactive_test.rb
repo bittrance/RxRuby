@@ -49,6 +49,10 @@ module Rx
       TestSubscription.new(subscribe, unsubscribe)
     end
 
+    def scheduler
+      @scheduler ||= Rx::TestScheduler.new(false)
+    end
+
     def assert_messages(expected, actual)
       assert_equal expected, actual, "Message records differ (#{expected.length}/#{actual.length})"
     end
