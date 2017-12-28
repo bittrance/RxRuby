@@ -103,84 +103,11 @@ module Rx
         d1.subscription = subscribe new_obs
         subscription
       end
-    end  
+    end
 
     # Merges two observable sequences into one observable sequence by using the selector function whenever one of the observable sequences produces an element.
     def combine_latest(other, &result_selector)
-      AnonymousObservable.new do |observer|
-        has_left = false
-        has_right = false
-
-        left = nil
-        right = nil
-
-        left_done = false
-        right_done = false
-
-        left_subscription = SingleAssignmentSubscription.new
-        right_subscription = SingleAssignmentSubscription.new
-
-        gate = Monitor.new
-
-        left_obs = Observer.configure do |o|
-          o.on_next do |l|
-            has_left = true
-            left = l
-
-            if has_right
-              res = nil
-              begin
-                res = result_selector.call left, right
-              rescue => e
-                observer.on_error e
-                break
-              end
-              observer.on_next res
-            end
-
-            observer.on_completed if right_done
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            left_done = true
-            observer.on_completed if right_done
-          end
-        end
-
-        right_obs = Observer.configure do |o|
-          o.on_next do |r|
-            has_right = true
-            right = r
-
-            if has_left
-              res = nil
-              begin
-                res = result_selector.call left, right
-              rescue => e
-                observer.on_error e
-                break
-              end
-              observer.on_next res
-            end
-
-            observer.on_completed if left_done
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            right_done = true
-            observer.on_completed if left_done
-          end
-        end
-
-        left_subscription.subscription = synchronize(gate).subscribe(left_obs)
-        right_subscription.subscription = other.synchronize(gate).subscribe(right_obs)
-
-        CompositeSubscription.new [left_subscription, right_subscription]
-      end
+      Observable.combine_latest(self, other, &result_selector)
     end
 
     # Concatenates the second observable sequence to the first observable sequence upon successful termination of the first.
@@ -308,12 +235,13 @@ module Rx
         other_subscription = SingleAssignmentSubscription.new
 
         open = false
+        other_completed = false
         gate = Monitor.new
 
         source_obs = Observer.configure do |o|
           o.on_next {|x| observer.on_next x if open }
           o.on_error(&observer.method(:on_error))
-          o.on_completed { observer.on_completed if open }
+          o.on_completed { observer.on_completed if open || other_completed }
         end
 
         other_obs = Observer.configure do |o|
@@ -323,6 +251,7 @@ module Rx
           end
 
           o.on_error(&observer.method(:on_error))
+          o.on_completed { other_completed = true }
         end
 
         source_subscription.subscription = synchronize(gate).subscribe(source_obs)
@@ -346,6 +275,7 @@ module Rx
 
         source_obs = Observer.configure do |o|
           o.on_next do |inner_source|
+            has_latest = true
             id = 0
 
             gate.synchronize do
@@ -357,14 +287,25 @@ module Rx
 
             inner_obs = Observer.configure do |io|
               io.on_next {|x| gate.synchronize { observer.on_next x if latest_num == id } }
-              io.on_error do |err| 
-                gate.synchronize do 
+
+              io.on_error do |err|
+                d.unsubscribe
+                gate.synchronize do
                   has_latest = false
                   observer.on_error err if latest_num == id
                 end
               end
+
+              io.on_completed do
+                d.unsubscribe
+                gate.synchronize do
+                  has_latest = false
+                  observer.on_completed if latest_num == id && stopped
+                end
+              end
             end
 
+            inner_subscription.subscription = d
             d.subscription = inner_source.subscribe inner_obs
           end
 
@@ -672,15 +613,21 @@ module Rx
           next_action = lambda do |i|
             if queues.all? {|q| q.length > 0 }
               res = queues.map {|q| q.shift }
-              observer.on_next(result_selector.call(*res))
-            elsif enumerable_select_with_index(is_done) {|x, j| j != i } .all?
+              begin
+                observer.on_next(result_selector.call(*res))
+              rescue => e
+                observer.on_error e
+                break
+              end
+            end
+            if queues.each_with_index.any? { |q, j| q.empty? && is_done[j] }
               observer.on_completed
             end
           end
 
           done = lambda do |i|
             is_done[i] = true
-            observer.on_completed if is_done.all?
+            observer.on_completed if queues[i].empty?
           end
 
           gate = Monitor.new
