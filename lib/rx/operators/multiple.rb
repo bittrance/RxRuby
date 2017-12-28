@@ -14,14 +14,6 @@ module Rx
 
   module Observable
 
-    class AmbObserver
-      attr_accessor(:observer)
-
-      def method_missing(m, *args, &block)
-        @observer.method(m).call(*args)
-      end
-    end
-
     # Propagates the observable sequence that reacts first.
     def amb(second)
       AnonymousObservable.new do |observer|
@@ -31,14 +23,14 @@ module Rx
 
         gate = Monitor.new
 
-        left = AmbObserver.new
-        right = AmbObserver.new
+        left = nil
+        right = nil
 
         handle_left = lambda do |&action|
           if choice == :neither
             choice = :left
             right_subscription.unsubscribe
-            left.observer = observer
+            left = observer
           end
 
           action.call if choice == :left
@@ -48,7 +40,7 @@ module Rx
           if choice == :neither
             choice = :right
             left_subscription.unsubscribe
-            right.observer = observer
+            right = observer
           end
 
           action.call if choice == :right
@@ -64,10 +56,10 @@ module Rx
           o.on_next {|x| handle_right.call { observer.on_next x } }
           o.on_error {|err| handle_right.call { observer.on_error err } }
           o.on_completed { handle_right.call { observer.on_completed } }
-        end        
+        end
 
-        left.observer = Observer.allow_reentrancy(left_obs, gate)
-        right.observer = Observer.allow_reentrancy(right_obs, gate)
+        left = Observer.allow_reentrancy(left_obs, gate)
+        right = Observer.allow_reentrancy(right_obs, gate)
 
         left_subscription.subscription = self.subscribe left
         right_subscription.subscription = second.subscribe right
