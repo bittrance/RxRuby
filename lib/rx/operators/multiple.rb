@@ -578,16 +578,13 @@ module Rx
                 break
               end
 
-              d = SingleAssignmentSubscription.new
-              subscription.subscription = d
-
               new_obs = Observer.configure do |o|
                 o.on_next(&observer.method(:on_next))
                 o.on_error(&observer.method(:on_error))
                 o.on_completed { this.call }
               end
 
-              current.subscribe new_obs
+              subscription.subscription = current.subscribe new_obs
             end
           }
 

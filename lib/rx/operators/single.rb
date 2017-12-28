@@ -380,6 +380,7 @@ module Rx
     end
 
     def enumerator_repeat_times(num, value)
+      raise ArgumentError.new("Expected #{num} to be an integer") unless num.is_a? Integer
       ThreadedEnumerator.new do |y|
         num.times do |i|
           y << value
