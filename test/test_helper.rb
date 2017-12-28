@@ -1,4 +1,4 @@
-if ENV['CODECOV_TOKEN']
+if ENV['CI'] = 'true'
   require 'simplecov'
   require 'codecov'
 
