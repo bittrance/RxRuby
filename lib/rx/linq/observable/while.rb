@@ -1,7 +1,7 @@
 module Rx
   class << Observable
     def while(condition, source)
-      enum = Enumerator.new {|y|
+      enum = ThreadedEnumerator.new {|y|
         while condition.call
           y << source
         end

@@ -193,7 +193,7 @@ module Rx
 
     # Concatenates the second observable sequence to the first observable sequence upon successful termination of the first.
     def concat(*other)
-      Observable.concat([self, *other].to_enum)
+      Observable.concat(self, *other)
     end
 
     # Merges elements from two observable sequences into a single observable sequence, using the specified scheduler for enumeration of and subscription to the sources.
@@ -432,7 +432,7 @@ module Rx
         AnonymousObservable.new do |observer|
           gate = AsyncLock.new
           disposed = false
-          e = args.length == 1 && args[0].is_a?(Enumerator) ? args[0] : args.to_enum
+          e = args.length == 1 && args[0].respond_to?(:next) ? args[0] : ThreadedEnumerator.new(args)
           subscription = SerialSubscription.new
           last_error = nil
 
@@ -553,7 +553,7 @@ module Rx
       def concat(*args)
         AnonymousObservable.new do |observer|
           disposed = false
-          e = args.length == 1 && args[0].is_a?(Enumerator) ? args[0] : args.to_enum
+          e = args.length == 1 && args[0].respond_to?(:next) ? args[0] : ThreadedEnumerator.new(args)
           subscription = SerialSubscription.new
           gate = AsyncLock.new
 
@@ -623,7 +623,7 @@ module Rx
         AnonymousObservable.new do |observer|
           gate = AsyncLock.new
           disposed = false
-          e = args.length == 1 && args[0].is_a?(Enumerator) ? args[0] : args.to_enum
+          e = args.length == 1 && args[0].respond_to?(:next) ? args[0] : ThreadedEnumerator.new(args)
           subscription = SerialSubscription.new
 
           cancelable = CurrentThreadScheduler.instance.schedule_recursive lambda {|this|
