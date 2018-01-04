@@ -108,7 +108,15 @@ module Rx
     # @return [Rx::Observable]
     def average(&block)
       return map(&block).average if block_given?
-      scan({:sum => 0, :count => 0}) {|prev, current| {:sum => prev[:sum] + current, :count => prev[:count] + 1 }}.
+      scan({:sum => 0, :count => 0}) do |acc, n|
+        begin
+          acc[:sum] += n
+          acc[:count] += 1
+        rescue TypeError => e
+          raise TypeError.new("average expected #{n} to be numerical (#{e.message})")
+        end
+        acc
+      end.
       final.
       map {|x|
         raise 'Sequence contains no elements' if x[:count] == 0
@@ -512,7 +520,13 @@ module Rx
     # source sequence.
     def sum(&block)
       return map(&block).sum if block_given?
-      reduce(0) {|acc, x| acc + x}
+      reduce(0) do |acc, n|
+        begin
+          acc + n
+        rescue TypeError => e
+          raise TypeError.new("sum expected #{n} to be numerical (#{e.message})")
+        end
+      end
     end
 
     # Creates an array from an observable sequence.
