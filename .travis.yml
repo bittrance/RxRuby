@@ -5,23 +5,27 @@ cache: bundler
 before_install:
   - gem install bundler $BUNDLER_VERSION
 jobs:
+  fast_finish: true
+  allow_failures:
+    - rvm: rbx-2.6
+    - rvm: rbx-3.82
   include:
     - stage: canary
       rvm: 2.4.0
     - stage: test
-      rvm: rbx-3.82
-      env: BUNDLER_VERSION='-v ~>1.11.2'
-    - stage: test
       rvm: jruby-19mode
-    - stage: test
-      rvm: rbx-2.6
-      env: BUNDLER_VERSION='-v ~>1.10.5'
     - stage: test
       rvm: 1.9.3
     - stage: test
       rvm: 2.0.0
     - stage: test
       rvm: 2.2.0
+    - stage: rbx
+      rvm: rbx-3.82
+      env: BUNDLER_VERSION='-v ~>1.11.2'
+    - stage: rbx
+      rvm: rbx-2.6
+      env: BUNDLER_VERSION='-v ~>1.10.5'
 notifications:
   email:
     on_success: never
