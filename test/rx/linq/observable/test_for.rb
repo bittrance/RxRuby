@@ -5,7 +5,7 @@ class TestObservableFor < Minitest::Test
 
   def test_array
     actual = scheduler.configure do
-      Rx::Observable.for(%w[1 2 3].map {|n| Rx::Observable.of(n) })
+      Rx::Observable.for([1, 2, 3].map {|n| Rx::Observable.of(n) })
     end
 
     assert_msgs msgs('--(123|)'), actual
@@ -19,7 +19,7 @@ class TestObservableFor < Minitest::Test
 
   def test_with_transform
     actual = scheduler.configure do
-      Rx::Observable.for(%w[1 2 3]) {|n| Rx::Observable.of(n) }
+      Rx::Observable.for([1, 2, 3]) {|n| Rx::Observable.of(n) }
     end
 
     assert_msgs msgs('--(123|)'), actual

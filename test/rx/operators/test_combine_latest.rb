@@ -11,7 +11,7 @@ class TestCombineLatest < Minitest::Test
     right_subs   = subs('--^-----!')
 
     actual = scheduler.configure do
-      left.combine_latest(right) { |*values| values.map(&:to_i).inject(0, :+).to_s }
+      left.combine_latest(right) { |*values| values.inject(0, :+) }
     end
 
     assert_msgs expected, actual
@@ -27,7 +27,7 @@ class TestObservableCombineLatest < Minitest::Test
     a        = cold('  -1----4|')
     b        = cold('  --2--5|')
     c        = cold('  ---36|')
-    expected = msgs('-----abcd|', a: %w[1 2 3], b: %w[1 2 6], c: %w[1 5 6], d: %w[4 5 6])
+    expected = msgs('-----abcd|', a: [1, 2, 3], b: [1, 2, 6], c: [1, 5, 6], d: [4, 5, 6])
     a_subs   = subs('--^------!')
     b_subs   = subs('--^-----!')
     c_subs   = subs('--^----!')
@@ -45,7 +45,7 @@ class TestObservableCombineLatest < Minitest::Test
   def test_emit_only_latest_from_each_source
     a        = cold('  -123--|')
     b        = cold('  ----4-|')
-    expected = msgs('------a-|', a: %w[3 4])
+    expected = msgs('------a-|', a: [3, 4])
     a_subs   = subs('--^-----!')
     b_subs   = subs('--^-----!')
 
@@ -62,7 +62,7 @@ class TestObservableCombineLatest < Minitest::Test
     a        = cold('  -1-----5|')
     b        = cold('  --2--4|')
     c        = cold('  ---3|')
-    expected = msgs('-----a-b-c|', a: %w[1 2 3], b: %w[1 4 3], c: %w[5 4 3])
+    expected = msgs('-----a-b-c|', a: [1, 2, 3], b: [1, 4, 3], c: [5, 4, 3])
     a_subs   = subs('--^-------!')
     b_subs   = subs('--^-----!')
     c_subs   = subs('--^---!')
@@ -130,7 +130,7 @@ class TestObservableCombineLatest < Minitest::Test
     b_subs   = subs('--^-----!')
 
     actual = scheduler.configure do
-      Rx::Observable.combine_latest(a, b) { |*values| values.map(&:to_i).inject(0, :+).to_s }
+      Rx::Observable.combine_latest(a, b) { |*values| values.inject(0, :+) }
     end
 
     assert_msgs expected, actual
