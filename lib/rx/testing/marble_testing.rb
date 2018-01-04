@@ -26,10 +26,19 @@ module Rx
         when '|'
           on_completed(time)
         when '#'
-          on_error(time, values[:error] || error)
+          v = values[:error] || error
+          if v.is_a? Proc
+            on_error_predicate(time, &v)
+          else
+            on_error(time, v)
+          end
         else
           v = values[event.to_sym] || (Integer(event) rescue event)
-          on_next(time, v)
+          if v.is_a? Proc
+            on_next_predicate(time, &v)
+          else
+            on_next(time, v)
+          end
         end
         time += increment
         message
