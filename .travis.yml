@@ -22,3 +22,7 @@ jobs:
       rvm: 2.0.0
     - stage: test
       rvm: 2.2.0
+notifications:
+  email:
+    on_success: never
+    on_failure: change
