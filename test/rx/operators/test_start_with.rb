@@ -8,7 +8,7 @@ class TestOperatorStartWith < Minitest::Test
     expected    = msgs('--(1-)2|')
     source_subs = subs('  ^ !')
 
-    actual = scheduler.configure { source.start_with('1') }
+    actual = scheduler.configure { source.start_with(1) }
 
     assert_msgs expected, actual
     assert_subs source_subs, source
@@ -19,7 +19,7 @@ class TestOperatorStartWith < Minitest::Test
     expected    = msgs('--(1-)2#')
     source_subs = subs('  ^ !')
 
-    actual = scheduler.configure { source.start_with('1') }
+    actual = scheduler.configure { source.start_with(1) }
 
     assert_msgs expected, actual
     assert_subs source_subs, source

@@ -28,7 +28,8 @@ module Rx
         when '#'
           on_error(time, values[:error] || error)
         else
-          on_next(time, values[event.to_sym] || event)
+          v = values[event.to_sym] || (Integer(event) rescue event)
+          on_next(time, v)
         end
         time += increment
         message
