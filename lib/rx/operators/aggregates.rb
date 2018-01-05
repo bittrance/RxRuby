@@ -159,7 +159,10 @@ module Rx
           end
 
           o.on_error(&observer.method(:on_error))
-          o.on_completed { raise 'Sequence contains no elements' }
+          o.on_completed do
+            err = RuntimeError.new('Sequence contains too few elements')
+            observer.on_error(err)
+          end
         end
 
         subscribe new_obs
@@ -210,7 +213,10 @@ module Rx
           end
 
           o.on_error(&observer.method(:on_error))
-          o.on_completed { raise 'Sequence contains no elements' }
+          o.on_completed do
+            err = RuntimeError.new('Sequence contains no elements')
+            observer.on_error(err)
+          end
         end
 
         subscribe new_obs
