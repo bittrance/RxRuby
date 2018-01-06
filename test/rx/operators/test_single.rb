@@ -91,17 +91,13 @@ class TestOperatorSingle < Minitest::Test
     assert_msgs expected, actual
     assert_subs left_subs, left
   end
-end
-
-class TestOperatorSingleOrDefault < Minitest::Test
-  include Rx::MarbleTesting
 
   def test_emits_default_value_on_empty_sequence
     left       = cold('  -|')
     expected   = msgs('---(2|)')
     left_subs  = subs('  ^!')
 
-    actual = scheduler.configure { left.single_or_default(2) }
+    actual = scheduler.configure { left.single(2) }
 
     assert_msgs expected, actual
     assert_subs left_subs, left
@@ -114,7 +110,7 @@ class TestOperatorSingleOrDefault < Minitest::Test
     expected   = msgs('----#', error: my_err)
     left_subs  = subs('  ^ !')
 
-    actual = scheduler.configure { left.single_or_default(3) }
+    actual = scheduler.configure { left.single(3) }
 
     assert_msgs expected, actual
     assert_subs left_subs, left
