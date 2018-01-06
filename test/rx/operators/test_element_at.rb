@@ -51,17 +51,13 @@ class TestOperatorElementAt < Minitest::Test
       left.element_at('foo')
     end
   end
-end
 
-class TestOperatorElementAtOrDefault < Minitest::Test
-  include Rx::MarbleTesting
-  
   def test_default_value_on_empty
     left       = cold('  -|')
     expected   = msgs('---(2|)')
     left_subs  = subs('  ^!')
 
-    actual = scheduler.configure { left.element_at_or_default(1, 2) }
+    actual = scheduler.configure { left.element_at(1, 2) }
 
     assert_msgs expected, actual
     assert_subs left_subs, left

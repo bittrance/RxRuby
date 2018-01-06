@@ -63,17 +63,13 @@ class TestOperatorLast < Minitest::Test
     assert_msgs expected, actual
     assert_subs left_subs, left
   end
-end
 
-class TestOperatorLastOrDefault < Minitest::Test
-  include Rx::MarbleTesting
-  
   def test_default_value_on_empty
     left       = cold('  -|')
     expected   = msgs('---(2|)')
     left_subs  = subs('  ^!')
 
-    actual = scheduler.configure { left.last_or_default(2) }
+    actual = scheduler.configure { left.last(2) }
 
     assert_msgs expected, actual
     assert_subs left_subs, left
