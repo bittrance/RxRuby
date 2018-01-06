@@ -3,7 +3,7 @@ require 'test_helper'
 class TestOperatorLast < Minitest::Test
   include Rx::MarbleTesting
   
-  def test_returns_last
+  def test_returns_last_value_and_completes
     left       = cold('  -123|')
     expected   = msgs('------(3|)')
     left_subs  = subs('  ^   !')
@@ -25,7 +25,7 @@ class TestOperatorLast < Minitest::Test
     assert_subs left_subs, left
   end
 
-  def test_block_selects_last
+  def test_block_selects_value_emitted_on_completion
     left       = cold('  -123|')
     expected   = msgs('------(2|)')
     left_subs  = subs('  ^   !')
@@ -64,7 +64,7 @@ class TestOperatorLast < Minitest::Test
     assert_subs left_subs, left
   end
 
-  def test_default_value_on_empty
+  def test_emit_default_value_on_empty_sequence
     left       = cold('  -|')
     expected   = msgs('---(2|)')
     left_subs  = subs('  ^!')
