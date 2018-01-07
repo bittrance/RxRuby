@@ -33,7 +33,7 @@ module Rx
             on_error(time, v)
           end
         else
-          v = values[event.to_sym] || (Integer(event) rescue event)
+          v = values.fetch(event.to_sym, (Integer(event) rescue event))
           if v.is_a? Proc
             on_next_predicate(time, &v)
           else
