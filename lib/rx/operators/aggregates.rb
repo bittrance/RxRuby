@@ -58,14 +58,12 @@ module Rx
     end
 
     # Determines whether all elements of an observable sequence satisfy a condition if block given, else if all are
-    # true
+    # truthy
     # @param [Proc] block
     # @return [Rx::Observable]
     def all?(&block)
-      block ||= lambda { |_| true }
-      select {|v| !(block.call v)}.
-      any?.
-      map {|b| !b }
+      block ||= lambda { |x| x }
+      any? { |v| !block.call(v) }.map { |b| !b }
     end
 
     # Determines whether no elements of an observable sequence satisfy a condition if block given, else if all are
@@ -73,21 +71,26 @@ module Rx
     # @param [Proc] block
     # @return [Rx::Observable]
     def none?(&block)
-      block ||= lambda { |_| true }
-      select {|v| !(block.call v)}.
-      any?
+      block ||= lambda { |x| x }
+      any? { |v| block.call(v) }.map { |b| !b }
     end
 
     # Determines whether any element of an observable sequence satisfies a condition if a block is given else if
     # there are any items in the observable sequence.
     # @return [Rx::Observable]
     def any?(&block)
-      return map(&block).any? if block_given?
+      block ||= lambda { |x| x }
       AnonymousObservable.new do |observer|
         new_obs = Observer.configure do |o|
-          o.on_next do |_|
-            observer.on_next true
-            observer.on_completed
+          o.on_next do |x|
+            begin
+              if block.call(x)
+                observer.on_next true
+                observer.on_completed
+              end
+            rescue => err
+              observer.on_error(err)
+            end
           end
 
           o.on_error(&observer.method(:on_error))
