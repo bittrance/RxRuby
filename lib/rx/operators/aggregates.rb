@@ -249,35 +249,17 @@ module Rx
       end
     end
 
-    # Returns the maximum element in an observable sequence.
-    # @param [Proc] block An optional selector function to produce an element.
-    # @return [Rx::Observable] The maximum element in an observable sequence.
-    def max(&block)
-      return map(&block).max if block_given?
-      max_by {|x| x} .map {|x| x[0] }
-    end
-
     # Returns the elements in an observable sequence with the maximum key value.
-    # @param [Proc] block Key selector function.
-    # @return [Rx::Observable] An observable sequence containing a list of zero or more elements that have a maximum
-    # key value.
-    def max_by(&block)
+    # @param [Proc] block Comparator function. It receives two arguments and is expected to return 1, 0, -1. See Ruby <=> operator for more info.
+    # @return [Rx::Observable] An observable sequence containing the single largest value or nil if source was empty.
+    def max(&block)
       extrema_by(&block)
     end
 
-    # Returns the minimum element in an observable sequence.
-    # @param [Proc] block An optional selector function to produce an element.
-    # @return [Rx::Observable] The minimum element in an observable sequence.
+    # Returns the element in an observable sequence with the minimum value.
+    # @param [Proc] block Comparator function. It receives two arguments and is expected to return 1, 0, -1. See Ruby <=> operator for more info.
+    # @return [Rx::Observable] >An observable sequence containing the single smallest value or nil if source was empty.
     def min(&block)
-      return map(&block).min if block_given?
-      min_by {|x| x} .map {|x| x[0] }
-    end
-
-    # Returns the elements in an observable sequence with the minimum key value.
-    # @param [Proc] block Key selector function.
-    # @return [Rx::Observable] >An observable sequence containing a list of zero or more elements that have a
-    # minimum key value.
-    def min_by(&block)
       extrema_by(true, &block)
     end
 
@@ -492,41 +474,37 @@ module Rx
     private
 
     def extrema_by(is_min = false, &block)
+      block ||= lambda { |l, r| l <=> r }
       AnonymousObservable.new do |observer|
         has_value = false
         last_key = nil
-        list = []
 
         new_obs = Observer.configure do |o|
           o.on_next do |x|
-            key = nil
-            begin
-              key = block.call(x)
-            rescue => e
-              observer.on_error e
-              return
-            end
-
-            comparison = 0
             if has_value
-              comparison = key<=>last_key
-              comparison = comparison * -1 if is_min
+              comparison = begin
+                block.call(last_key, x)
+              rescue => e
+                observer.on_error e
+                next
+              end
+              if comparison.nil?
+                nil
+              elsif is_min && comparison > 0
+                last_key = x
+              elsif !is_min && comparison < 0
+                last_key = x
+              end
             else
               has_value = true
-              last_key = key
+              last_key = x
             end
-
-            if comparison > 0
-              last_key = key
-              list = []
-            end
-            list.push x if comparison >= 0
           end
 
           o.on_error(&observer.method(:on_error))
 
           o.on_completed do
-            observer.on_next list
+            observer.on_next last_key
             observer.on_completed
           end
 
