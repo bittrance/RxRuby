@@ -310,28 +310,6 @@ module Rx
       end
     end
 
-    # Returns a list with the specified number of contiguous elements from the end of an observable sequence.
-    def take_last_buffer(count)
-      AnonymousObservable.new do |observer|
-        q = []
-        new_obs = Observer.configure do |o|
-          o.on_next do |x|
-            q.push x
-            q.shift if q.length > count
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            observer.on_next q
-            observer.on_completed
-          end
-        end
-
-        susbcribe new_obs
-      end
-    end
-
     # Projects each element of an observable sequence into zero or more windows which are produced based on element count information.
     def window_with_count(count, skip)
       raise ArgumentError.new 'Count must be greater than zero' if count <= 0
