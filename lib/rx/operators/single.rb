@@ -288,7 +288,7 @@ module Rx
         new_obs = Observer.configure do |o|
           o.on_next do |x|
             q.push x
-            q.shift if q.length > 0
+            q.shift if q.length > count
           end
 
           o.on_error(&observer.method(:on_error))
@@ -303,10 +303,9 @@ module Rx
               end
             })
           end
-
-          g.add(subscribe new_obs)
-          g
         end
+
+        g << subscribe(new_obs)
       end
     end
 
