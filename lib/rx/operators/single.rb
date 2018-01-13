@@ -39,26 +39,22 @@ module Rx
     end
 
     # Returns an observable sequence that contains only distinct contiguous elements according to the optional key_selector.
-    def distinct_until_changed(&key_selector)
-      key_selector ||= lambda {|x| x}
+    def distinct_until_changed(&comparator)
+      comparator ||= lambda {|l, r| l == r }
       AnonymousObservable.new do |observer|
-        current_key = nil
-        has_current = nil
+        current_value = nil
+        has_current = false
 
         new_obs = Rx::Observer.configure do |o|
           o.on_next do |value|
-            key = nil
             begin
-              key = key_selector.call value
+              if !has_current || !comparator.call(current_value, value)
+                has_current = true
+                current_value = value
+                observer.on_next value
+              end
             rescue => err
               observer.on_error err
-              next
-            end
-
-            if !current_key || key != current_key
-              has_current = true
-              current_key = key
-              observer.on_next value
             end
           end
 
