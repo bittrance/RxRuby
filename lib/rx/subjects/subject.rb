@@ -73,8 +73,7 @@ module Rx
       os.each {|o| o.on_next value } if os      
     end
 
-    # Subscribes an observer to the subject.
-    def subscribe(observer)
+    def _subscribe(observer)
       raise 'observer cannot be nil' unless observer
 
       @gate.synchronize do
