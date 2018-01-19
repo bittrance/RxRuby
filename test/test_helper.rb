@@ -1,4 +1,4 @@
-if ENV['CI'] = 'true'
+if ENV['CI'] == 'true'
   require 'simplecov'
   require 'codecov'
 
