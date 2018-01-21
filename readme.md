@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/bittrance/rxruby.svg?branch=master)](https://travis-ci.org/bittrance/rxruby)
 [![Gem Version](https://badge.fury.io/rb/rx.svg)](https://badge.fury.io/rb/rx)
 [![Downloads](http://ruby-gem-downloads-badge.herokuapp.com/rx?type=total)](https://rubygems.org/gems/rx)
-[![Coverage](https://codecov.io/gh/bittrance/rxruby/branch/coveralls/graph/badge.svg)](https://codecov.io/gh/bittrance/rxruby)
+[![Coverage](https://codecov.io/gh/bittrance/rxruby/branch/master/graph/badge.svg)](https://codecov.io/gh/bittrance/rxruby)
 [![Code Climate](https://codeclimate.com/github/bittrance/rxruby/badges/gpa.svg)](https://codeclimate.com/github/bittrance/rxruby)
 
 **[The Need to go Reactive](#the-need-to-go-reactive)** |
