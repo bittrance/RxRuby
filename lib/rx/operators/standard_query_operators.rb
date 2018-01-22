@@ -161,9 +161,8 @@ module Rx
                 observer.on_error e
                 next
               end
-
-              observer.on_next x if running
             end
+            observer.on_next x if running
           end
 
           o.on_error(&observer.method(:on_error))
