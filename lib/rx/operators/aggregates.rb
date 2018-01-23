@@ -559,7 +559,7 @@ module Rx
       end
 
       def value_selector(&value_selector_block)
-        @on_error_block = value_selector_block
+        @value_selector_block = value_selector_block
       end
     end
 
