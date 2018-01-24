@@ -30,7 +30,7 @@ module Rx
       end
     end
 
-    def subscribe(observer)
+    def _subscribe(observer)
       raise 'observer cannot be nil' unless observer
 
       @observers.push observer

@@ -86,7 +86,7 @@ module Rx
     end
 
     # Subscribes an observer to the subject.
-    def subscribe(observer)
+    def _subscribe(observer)
       raise 'observer cannot be nil' unless observer
 
       err = nil
