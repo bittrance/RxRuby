@@ -1,12 +1,12 @@
-[![Build Status](Status](https://travis-ci.org/bittrance/rxruby.svg?branch=master)](https://travis-ci.org/bittrance/rxruby)
-[![Gem Version](Version](https://badge.fury.io/rb/rx.svg)](https://badge.fury.io/rb/rx)
-[![Downloads](http://ruby-gem-downloads-badge.herokuapp.com/rx?type=total)]([![Downloads](http://ruby-gem-downloads-badge.herokuapp.com/rx?type=total)](https://rubygems.org/gems/rx)
-[![Coverage]([![Coverage](https://codecov.io/gh/bittrance/rxruby/branch/master/graph/badge.svg)](https://codecov.io/gh/bittrance/rxruby)
-[![Code Climate](Climate](https://codeclimate.com/github/bittrance/rxruby/badges/gpa.svg)](https://codeclimate.com/github/bittrance/rxruby)
+[![Build Status](https://travis-ci.org/bittrance/rxruby.svg?branch=master)](https://travis-ci.org/bittrance/rxruby)
+[![Gem Version](https://badge.fury.io/rb/rx.svg)](https://badge.fury.io/rb/rx)
+[![Downloads](http://ruby-gem-downloads-badge.herokuapp.com/rx?type=total)](https://rubygems.org/gems/rx)
+[![Coverage](https://codecov.io/gh/bittrance/rxruby/branch/master/graph/badge.svg)](https://codecov.io/gh/bittrance/rxruby)
+[![Code Climate](https://codeclimate.com/github/bittrance/rxruby/badges/gpa.svg)](https://codeclimate.com/github/bittrance/rxruby)
 
 # Taking RxRuby across the finishing line
 
-[Original README](https://github.com/ReactiveX/RxRuby/readme.md)
+[Original README](https://github.com/ReactiveX/RxRuby/tree/master/readme.md)
 
 This fork is an attempt to complete [RxRuby](https://github.com/ReactiveX/RxRuby) which appear to have been abandoned in relatively close to completing a first verision.
 
