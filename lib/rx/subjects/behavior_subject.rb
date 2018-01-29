@@ -51,7 +51,7 @@ module Rx
         end 
       end
 
-      os.each {|o| observer.on_completed } if os
+      os.each {|o| o.on_completed } if os
     end
 
     # Notifies all subscribed observers with the error.
@@ -70,7 +70,7 @@ module Rx
         end         
       end
 
-      os.each {|o| observer.on_error error } if os
+      os.each {|o| o.on_error error } if os
     end    
 
     # Notifies all subscribed observers with the value.
