@@ -26,7 +26,7 @@ module Rx
 
     # Indicates whether the subject has observers subscribed to it.
     def has_observers?
-      observers && observers.length > 0
+      !observers.nil? && observers.length > 0
     end
 
     # Gets the current value or throws an exception.
