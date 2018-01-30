@@ -72,3 +72,50 @@ class TestOperatorMapWithIndex < Minitest::Test
     assert_subs source_subs, source
   end
 end
+
+class TestOperatorFlatMap < Minitest::Test
+  include Rx::MarbleTesting
+
+  def test_flattens_output_from_block
+    a           = cold('   1-3|')
+    b           = cold('    2-4--|')
+    c           = cold('     --5|')
+    source      = cold('  -abc|')
+    expected    = msgs('---12345-|')
+    source_subs = subs('  ^   !')
+    a_subs      = subs('   ^  !')
+    b_subs      = subs('    ^    !')
+    c_subs      = subs('     ^  !')
+
+    actual = scheduler.configure do
+      source.flat_map do |x|
+        {'a' => a, 'b' => b, 'c' => c}.fetch(x)
+      end
+    end
+
+    assert_msgs expected, actual
+    assert_subs source_subs, source
+    assert_subs a_subs, a
+    assert_subs b_subs, b
+    assert_subs c_subs, c
+  end
+end
+
+class TestOperatorFlatMapWithIndex < Minitest::Test
+  include Rx::MarbleTesting
+
+  def test_flattens_output_from_indexing_block
+    source      = cold('  -12345|')
+    expected    = msgs('---13579|')
+    source_subs = subs('  ^     !')
+
+    actual = scheduler.configure do
+      source.flat_map_with_index do |x, i|
+        Rx::Observable.just(x + i)
+      end
+    end
+
+    assert_msgs expected, actual
+    assert_subs source_subs, source
+  end
+end
