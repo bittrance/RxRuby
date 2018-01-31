@@ -28,7 +28,7 @@ module Rx
 
     # Indicates whether the subject has observers subscribed to it.
     def has_observers?
-      observers && observers.length > 0
+      !observers.nil? && observers.length > 0
     end
 
     # Notifies all subscribed observers about the end of the sequence.
@@ -155,7 +155,7 @@ module Rx
     private 
 
     def check_unsubscribed
-      raise ArgumentError.new 'Subject unsubscribed' if unsubscribed
+      raise 'Subject unsubscribed' if unsubscribed
     end
   end
 end  
