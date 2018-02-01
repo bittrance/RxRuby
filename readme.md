@@ -27,7 +27,7 @@ It's gonna be green, yo!
 The goal of this effort is to improve the existing "rx" gem on RubyGems rather than to release a forked gem. These changes would ideally be merged upstream.
 
 ### Milestone 3: API documentation  and introduction
-Complete rdoc API documentation and write a proper introduction so that new users understand how to apply RxRuby to their own problems. Release as 0.2.0.
+Complete rdoc API documentation and write a proper introduction so that new users understand how to apply RxRuby to their own problems. This also includes making sure that the API is as close to RxJS 5 as is reasonable. Release as 0.2.0.
 
 ### Milestone 4: Properly thread-safe
 Write a concurrency test suite to straighten out the RxRuby components that need to be properly concurrent in order to provide the one-event-at-a-time guarantee on which users and most operators depend. Release 0.5.0.
