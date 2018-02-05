@@ -288,7 +288,7 @@ module Rx
         new_obs = Observer.configure do |o|
           o.on_next do |x|
             q.push x
-            q.shift if q.length > 0
+            q.shift if q.length > count
           end
 
           o.on_error(&observer.method(:on_error))
@@ -303,32 +303,9 @@ module Rx
               end
             })
           end
-
-          g.add(subscribe new_obs)
-          g
-        end
-      end
-    end
-
-    # Returns a list with the specified number of contiguous elements from the end of an observable sequence.
-    def take_last_buffer(count)
-      AnonymousObservable.new do |observer|
-        q = []
-        new_obs = Observer.configure do |o|
-          o.on_next do |x|
-            q.push x
-            q.shift if q.length > count
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            observer.on_next q
-            observer.on_completed
-          end
         end
 
-        susbcribe new_obs
+        g << subscribe(new_obs)
       end
     end
 
