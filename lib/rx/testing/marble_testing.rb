@@ -4,8 +4,10 @@ module Rx
   module MarbleTesting
     include Rx::ReactiveTest
 
+    class MyError < RuntimeError ; end
+
     def error
-      @err ||= RuntimeError.new
+      @err ||= MyError.new
     end
 
     def msgs(events, values = {})
