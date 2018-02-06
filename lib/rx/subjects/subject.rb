@@ -24,7 +24,7 @@ module Rx
 
     # Indicates whether the subject has observers subscribed to it.
     def has_observers?
-      @observers && @observers.length > 0
+      !@observers.nil? && @observers.length > 0
     end
 
     # Notifies all subscribed observers about the end of the sequence.
@@ -124,7 +124,7 @@ module Rx
     end
 
     def check_disposed
-      raise ArgumentError.new 'Subject disposed' if @disposed
+      raise 'Subject disposed' if @disposed
     end
   end  
 end
