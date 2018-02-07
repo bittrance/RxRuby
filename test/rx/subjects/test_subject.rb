@@ -10,14 +10,14 @@ class TestSubject < Minitest::Test
     @err = RuntimeError.new
   end
 
-  def test_subscribe_observer
+  def test_subscribe_with_observer
     @subject.subscribe(@observer1)
     @subject.on_next(1)
     expected = [on_next(0, 1)]
     assert_messages expected, @observer1.messages
   end
 
-  def test_subscribe_block
+  def test_subscribe_with_block
     messages = []
     @subject.subscribe { |m| messages << m }
     @subject.on_next(1)
@@ -28,7 +28,7 @@ class TestSubject < Minitest::Test
     assert_equal [1], messages
   end
 
-  def subscribe_triple_lambda
+  def subscribe_with_triple_lambda
     messages = []
     @subject.subscribe(
       lambda { |m| messages << m },
@@ -39,6 +39,18 @@ class TestSubject < Minitest::Test
     @subject.on_error(@err)
     @subject.on_completed
     assert_equal [1, @err, :complete], messages
+  end
+
+  def test_has_observers
+    assert_equal false, @subject.has_observers?
+    s = @subject.subscribe { }
+    assert_equal true, @subject.has_observers?
+    s.unsubscribe
+    assert_equal false, @subject.has_observers?
+    @subject.subscribe { }
+    assert_equal true, @subject.has_observers?
+    @subject.unsubscribe
+    assert_equal false, @subject.has_observers?
   end
 
   def test_allows_multiple_subscribers
@@ -56,7 +68,7 @@ class TestSubject < Minitest::Test
     assert_messages expected, @observer2.messages
   end
 
-  def test_subscribe_to_completed_completes
+  def test_emit_completion_on_subscribe
     @subject.on_completed
     @subject.subscribe(@observer1)
     assert_equal [on_completed(0)], @observer1.messages
@@ -78,18 +90,18 @@ class TestSubject < Minitest::Test
     assert_messages [on_next(0, 1), on_next(0, 2)], @observer2.messages
   end
 
-  def test_unsubscribe_disposes_subject
+  def test_disposed_subject_refuses_all_interaction
     @subject.unsubscribe
-    assert_raises(ArgumentError) do
+    assert_raises(RuntimeError) do
       @subject.subscribe(@observer1)
     end
-    assert_raises(ArgumentError) do
+    assert_raises(RuntimeError) do
       @subject.on_next(1)
     end
-    assert_raises(ArgumentError) do
+    assert_raises(RuntimeError) do
       @subject.on_error(@err)
     end
-    assert_raises(ArgumentError) do
+    assert_raises(RuntimeError) do
       @subject.on_completed
     end
   end

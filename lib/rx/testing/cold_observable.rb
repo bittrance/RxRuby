@@ -19,7 +19,7 @@ module Rx
       @subscriptions = []
     end
 
-    def subscribe(observer)
+    def _subscribe(observer)
       raise 'observer cannot be nil' unless observer
 
       subscriptions.push(TestSubscription.new @scheduler.now)

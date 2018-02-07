@@ -26,7 +26,7 @@ module Rx
 
     # Indicates whether the subject has observers subscribed to it.
     def has_observers?
-      observers && observers.length > 0
+      !observers.nil? && observers.length > 0
     end
 
     # Gets the current value or throws an exception.
@@ -51,7 +51,7 @@ module Rx
         end 
       end
 
-      os.each {|o| observer.on_completed } if os
+      os.each {|o| o.on_completed } if os
     end
 
     # Notifies all subscribed observers with the error.
@@ -70,7 +70,7 @@ module Rx
         end         
       end
 
-      os.each {|o| observer.on_error error } if os
+      os.each {|o| o.on_error error } if os
     end    
 
     # Notifies all subscribed observers with the value.
@@ -86,7 +86,7 @@ module Rx
     end
 
     # Subscribes an observer to the subject.
-    def subscribe(observer)
+    def _subscribe(observer)
       raise 'observer cannot be nil' unless observer
 
       err = nil
