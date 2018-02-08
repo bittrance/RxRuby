@@ -230,7 +230,7 @@ module Rx
               end
             rescue => err
               observer.on_error err
-              break
+              next
             end
 
             observer.on_next accumulation
