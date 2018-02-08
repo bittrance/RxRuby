@@ -148,7 +148,7 @@ module Rx
           o.on_next {|x| observer.on_next(Notification.create_on_next x) }
 
           o.on_error do |err|
-            observer.on_next(Notification.create_on_next err)
+            observer.on_next(Notification.create_on_error err)
             observer.on_completed
           end
 
