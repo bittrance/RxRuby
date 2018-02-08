@@ -322,6 +322,7 @@ module Rx
         left_queue = []
         right_queue = []
 
+        subscription1 = SingleAssignmentSubscription.new
         obs1 = Observer.configure do |o|
           o.on_next do |x|
             gate.synchronize do
@@ -357,11 +358,13 @@ module Rx
                 end
               end
             end
+            subscription1.unsubscribe
           end
         end
 
-        subscription1 = subscribe obs1
+        subscription1.subscription = subscribe obs1
 
+        subscription2 = SingleAssignmentSubscription.new
         obs2 = Observer.configure do |o|
           o.on_next do |x|
             gate.synchronize do
@@ -397,10 +400,11 @@ module Rx
                 end
               end
             end
+            subscription2.unsubscribe
           end
         end
 
-        subscription2 = other.subscribe obs2
+        subscription2.subscription = other.subscribe obs2
 
         CompositeSubscription.new [subscription1, subscription2]
       end
