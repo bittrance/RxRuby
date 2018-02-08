@@ -82,7 +82,7 @@ class TestSubject < Minitest::Test
 
   def test_unsubscribe_observer_stops_emitting
     s1 = @subject.subscribe(@observer1)
-    s2 = @subject.subscribe(@observer2)
+    @subject.subscribe(@observer2)
     @subject.on_next(1)
     s1.unsubscribe
     @subject.on_next(2)

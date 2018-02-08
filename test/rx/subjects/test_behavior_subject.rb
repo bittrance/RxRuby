@@ -151,7 +151,7 @@ class TestBehaviorSubject < Minitest::Test
 
   def test_unsubscribe_observer_stops_emitting
     s1 = @subject.subscribe(@observer1)
-    s2 = @subject.subscribe(@observer2)
+    @subject.subscribe(@observer2)
     s1.unsubscribe
     @subject.on_next(43)
     assert_messages [on_next(0, 42)], @observer1.messages

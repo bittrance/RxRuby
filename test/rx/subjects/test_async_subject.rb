@@ -138,7 +138,7 @@ class TestAsyncSubject < Minitest::Test
 
   def test_unsubscribe_observer_stops_emitting
     s1 = @subject.subscribe(@observer1)
-    s2 = @subject.subscribe(@observer2)
+    @subject.subscribe(@observer2)
     s1.unsubscribe
     @subject.on_next(43)
     @subject.on_completed
