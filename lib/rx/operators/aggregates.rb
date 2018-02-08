@@ -140,36 +140,20 @@ module Rx
       reduce(0) {|c, _| c + 1 }
     end
 
-    # Returns the element at a specified index in a sequence.
+    # Returns the element at a specified index in a sequence. Will raise or return dwfault value if sequence is too short.
     # @param [Numeric] index The zero-based index of the element to retrieve.
+    # @param [Object] default_value The optional default value to use if the index is out of range.
     # @return [Rx::Observable] An observable sequence that produces the element at the specified position in the
     # source sequence.
-    def element_at(index)
-      raise ArgumentError.new 'index cannot be less than zero' if index < 0
-      AnonymousObservable.new do |observer|
-        i = index
-        new_obs = Observer.configure do |o|
-          o.on_next do |value|
-            if i == 0
-              observer.on_next value
-              observer.on_completed
-            end
-
-            i -= 1
-          end
-
-          o.on_error(&observer.method(:on_error))
-          o.on_completed { raise 'Sequence contains no elements' }
-        end
-
-        subscribe new_obs
+    def element_at(*args)
+      has_default = false
+      index = args[0]
+      if args.length == 2
+        has_default = true
+        default_value = args[1]
+      elsif args.length > 2
+        raise ArgumentError.new "Expected index and optional default value, received #{args}"
       end
-    end
-
-    # Returns the element at a specified index in a sequence or a default value if the index is out of range.
-    # @param [Numeric] index The zero-based index of the element to retrieve.
-    # @param [Object] default_value The default value to use if the index is out of range.
-    def element_at_or_default(index, default_value = nil)
       raise ArgumentError.new 'index cannot be less than zero' if index < 0
       AnonymousObservable.new do |observer|
         i = index
@@ -184,10 +168,14 @@ module Rx
           end
 
           o.on_error(&observer.method(:on_error))
-
           o.on_completed do
-            observer.on_next default_value
-            observer.on_completed
+            if has_default
+              observer.on_next default_value
+              observer.on_completed
+            else
+              err = RuntimeError.new('Sequence contains too few elements')
+              observer.on_error(err)
+            end
           end
         end
 
@@ -197,34 +185,20 @@ module Rx
 
     # Returns the first element of an observable sequence that satisfies the condition in the predicate if a block is
     # given, else the first item in the observable sequence.
+    # @param [Object] default_value The default value to use if the sequence is empty.
     # @param [Proc] block Optional predicate function to evaluate for elements in the source sequence.
     # @return [Rx::Observable] Sequence containing the first element in the observable sequence that satisfies the
     # condition in the predicate if a block is given, else the first element.
-    def first(&block)
-      return select(&block).first if block_given?
-      AnonymousObservable.new do |observer|
-        new_obs = Observer.configure do |o|
-          o.on_next do |x|
-            observer.on_next x
-            observer.on_completed
-          end
-
-          o.on_error(&observer.method(:on_error))
-          o.on_completed { raise 'Sequence contains no elements' }
-        end
-
-        subscribe new_obs
+    def first(*args, &block)
+      return select(&block).first(*args) if block_given?
+      has_default = false
+      if args.length == 1
+        has_default = true
+        default_value = args[0]
+      elsif args.length > 1
+        raise ArgumentError.new "Expected only an optional default value, received #{args}"
       end
-    end
 
-    # Returns the first element of an observable sequence that satisfies the condition in the predicate if given,
-    # or a default value if no such element exists.
-    # @param [Object] default_value The default value to use if the sequence is empty.
-    # @param [Proc] block An optional predicate function to evaluate for elements in the source sequence.
-    # @return [Rx::Observable] Sequence containing the first element in the observable sequence that satisfies the
-    # condition in the predicate if given, or a default value if no such element exists.
-    def first_or_default(default_value = nil, &block)
-      return select(&block).first_or_default(default_value) if block_given?
       AnonymousObservable.new do |observer|
         new_obs = Observer.configure do |o|
           o.on_next do |x|
@@ -233,16 +207,20 @@ module Rx
           end
 
           o.on_error(&observer.method(:on_error))
-
           o.on_completed do
-            observer.on_next default_value
-            observer.on_completed
+            if has_default
+              observer.on_next default_value
+              observer.on_completed
+            else
+              err = RuntimeError.new('Sequence contains no elements')
+              observer.on_error(err)
+            end
           end
         end
 
         subscribe new_obs
       end
-    end
+    end 
 
     # Determines whether an observable sequence is empty.
     # @return [Rx::Observable] An observable sequence containing a single element determining whether the source
@@ -253,11 +231,19 @@ module Rx
 
     # Returns the last element of an observable sequence that satisfies the condition in the predicate if the block is
     # given, else the last element in the observable sequence.
+    # @param [Object] default_value The default value to use if the sequence is empty.
     # @param [Proc] block An predicate function to evaluate for elements in the source sequence.
     # @return {Rx::Observable} Sequence containing the last element in the observable sequence that satisfies the
     # condition in the predicate if given, or the last element in the observable sequence.
-    def last(&block)
-      return select(&block).last if block_given?
+    def last(*args, &block)
+      return select(&block).last(*args) if block_given?
+      has_default = false
+      if args.length == 1
+        has_default = true
+        default_value = args[0]
+      elsif args.length > 1
+        raise ArgumentError.new "Expected only an optional default value, received #{args}"
+      end
       AnonymousObservable.new do |observer|
 
         value = nil
@@ -275,40 +261,13 @@ module Rx
             if seen_value
               observer.on_next value
               observer.on_completed
+            elsif has_default
+              observer.on_next default_value
+              observer.on_completed
             else
-              observer.on_error(RuntimeError.new 'Sequence contains no elements' )
+              err = RuntimeError.new('Sequence contains no elements')
+              observer.on_error(err)
             end
-          end
-        end
-
-        subscribe new_obs
-      end
-    end
-
-    # Returns the last element of an observable sequence that satisfies the condition in the predicate if given, or
-    # a default value if no such element exists.
-    # @param [Object] default_value The default value to use if the sequence is empty.
-    # @param [Proc] block An predicate function to evaluate for elements in the source sequence.
-    # @return {Rx::Observable} Sequence containing the last element in the observable sequence that satisfies the
-    # condition in the predicate if given, or a default value if no such element exists.
-    def last_or_default(default_value = nil, &block)
-      return select(&block).last_or_default(default_value) if block_given?
-      AnonymousObservable.new do |observer|
-
-        value = nil
-        seen_value = false
-
-        new_obs = Observer.configure do |o|
-          o.on_next do |v|
-            value = v
-            seen_value = true
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            observer.on_next (seen_value ? value : default_value)
-            observer.on_completed
           end
         end
 
@@ -446,10 +405,18 @@ module Rx
 
     # Returns the only element of an observable sequence, and reports an exception if there is not exactly one
     # element in the observable sequence.
+    # @param [Object] default_value The default value if no value is provided
     # @param [Proc] block A predicate function to evaluate for elements in the source sequence.
     # @return [Rx::Observable] >Sequence containing the single element in the observable sequence.
-    def single(&block)
-      return select(&block).single if block_given?
+    def single(*args, &block)
+      return select(&block).single(*args) if block_given?
+      has_default = false
+      if args.length == 1
+        has_default = true
+        default_value = args[0]
+      elsif args.length > 1
+        raise ArgumentError.new "Expected only an optional default value, received #{args}"
+      end
       AnonymousObservable.new do |observer|
         seen_value = false
         value = nil
@@ -470,43 +437,13 @@ module Rx
             if seen_value
               observer.on_next value
               observer.on_completed
+            elsif has_default
+              observer.on_next default_value
+              observer.on_completed
             else
-              observer.on_error(RuntimeError.new 'Sequence contains no elements')
+              err = RuntimeError.new('Sequence contains no elements')
+              observer.on_error(err)
             end
-          end
-        end
-
-        subscribe new_obs
-      end
-    end
-
-    # Returns the only element of an observable sequence, or a default value if the observable sequence is empty;
-    # this method reports an exception if there is more than one element in the observable sequence.
-    # @param [Object] default_value The default value if no value is provided
-    # @param [Proc] block A predicate function to evaluate for elements in the source sequence.
-    # @return [Rx::Observable] Sequence containing the single element in the observable sequence, or a default value
-    # if no such element exists.
-    def single_or_default(default_value = nil, &block)
-      return select(&block).single_or_default(default_value) if block_given?
-      AnonymousObservable.new do |observer|
-        seen_value = false
-        value = nil
-
-        new_obs = Observer.configure do |o|
-          o.on_next do |x|
-            if seen_value
-              observer.on_error(RuntimeError.new 'More than one element produced')
-            else
-              value = x
-              seen_value = true
-            end
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            observer.on_next (seen_value ? value : default_value)
-            observer.on_completed
           end
         end
 
