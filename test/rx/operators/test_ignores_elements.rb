@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class TestOperatorDistinct < Minitest::Test
+class TestOperatorIgnoreElements < Minitest::Test
   include Rx::MarbleTesting
 
   def test_ony_outputs_on_completed
