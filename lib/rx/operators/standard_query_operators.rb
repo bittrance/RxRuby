@@ -116,6 +116,7 @@ module Rx
 
     # Bypasses a specified number of elements in an observable sequence and then returns the remaining elements.
     def skip(count)
+      raise ArgumentError.new 'Count must be at least zero' if count < 0
       AnonymousObservable.new do |observer|
         remaining = count
 
@@ -161,9 +162,8 @@ module Rx
                 observer.on_error e
                 next
               end
-
-              observer.on_next x if running
             end
+            observer.on_next x if running
           end
 
           o.on_error(&observer.method(:on_error))
@@ -175,8 +175,9 @@ module Rx
     end
 
     # Returns a specified number of contiguous elements from the start of an observable sequence.
-    def take(count, scheduler = ImmediateScheduler.instance)
-      return Observable.empty(scheduler) if count == 0
+    def take(count)
+      raise ArgumentError.new 'Count must be at least zero' if count < 0
+      return Observable.empty if count == 0
 
       AnonymousObservable.new do |observer|
 
