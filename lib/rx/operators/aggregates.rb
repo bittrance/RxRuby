@@ -11,35 +11,6 @@ module Rx
 
   module Observable
 
-    # Internal method to get the final value
-    # @return [Rx::Observable]
-    def final
-      AnonymousObservable.new do |observer|
-        value = nil
-        has_value = false
-
-        new_obs = Observer.configure do |o|
-          o.on_next do |x|
-            value = x
-            has_value = true
-          end
-
-          o.on_error(&observer.method(:on_error))
-
-          o.on_completed do
-            if has_value
-              observer.on_next value
-              observer.on_completed
-            else
-              observer.on_error(RuntimeError.new 'Sequence contains no elements')
-            end
-          end
-        end
-
-        subscribe new_obs
-      end
-    end
-
     # Applies an accumulator function over an observable sequence, returning the result of the aggregation as a single
     # element in the result sequence. The specified seed value is used as the initial accumulator value.
     # For aggregation behavior with incremental intermediate results, see Rx::Observable.scan
@@ -49,9 +20,9 @@ module Rx
       # 1. (seed, Symbol) || (seed, &block)
       # 2. (Symbol) || (&block)
       if (args.length == 2 && args[1].is_a?(Symbol)) || (args.length == 1 && block_given?)
-        scan(*args, &block).start_with(args[0]).final
+        scan(*args, &block).start_with(args[0]).last
       elsif (args.length == 1 && args[0].is_a?(Symbol)) || (args.length == 0 && block_given?)
-        scan(*args, &block).final
+        scan(*args, &block).last
       else
         raise ArgumentError.new 'Invalid arguments'
       end
@@ -120,7 +91,7 @@ module Rx
         end
         acc
       end.
-      final.
+      last.
       map {|x|
         raise 'Sequence contains no elements' if x[:count] == 0
         x[:sum] / x[:count]
