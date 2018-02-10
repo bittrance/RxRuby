@@ -32,88 +32,64 @@ module Rx
       raise ArgumentError.new 'time_span must be greater than zero' if time_shift <= 0
 
       AnonymousObservable.new do |observer|
-        total_time = 0
-        next_shift = time_shift
-        next_span = time_span
-
-        gate = Mutex.new
         q = []
+        stopped = false
+        gate = Monitor.new
 
-        timer_d = SerialSubscription.new
-        group_subscription = CompositeSubscription.new [timer_d]
-        ref_count_subscription = RefCountSubscription.new(group_subscription)
+        start_sub = SerialSubscription.new
+        close_subs = CompositeSubscription.new
 
-        create_timer = lambda {
-          m = SingleAssignmentSubscription.new
-          timer_d.subscription = m
-
-          is_span = false
-          is_shift = false
-          if next_span == next_shift
-            is_span = true
-            is_shift = true
-          elsif next_span < next_shift
-            is_span = true
-          else
-            is_shift = true
-          end
-
-          new_total_time = is_span ? next_span : next_shift
-          ts = new_total_time - total_time
-          total_time = new_total_time
-
-          if is_span
-            next_span += time_shift
-          end
-          if is_shift
-            next_shift += time_shift
-          end
-
-          m.subscription = scheduler.schedule_relative(ts, lambda {
-            gate.synchronize do
-              if is_shift
-                s = Subject.new
-                q.push s
-                observer.on_next(s.add_ref(ref_count_subscription))
+        start_window = lambda do
+          gate.synchronize do
+            unless stopped
+              if time_span == time_shift
+                window = gate.synchronize { q.shift unless stopped }
+                window.on_completed if window
+              else
+                m = SingleAssignmentSubscription.new
+                close_subs << m
+                m.subscription = scheduler.schedule_relative(time_span, lambda do
+                  window = gate.synchronize { q.shift unless stopped }
+                  window.on_completed if window
+                  close_subs.delete(m)
+                end)
               end
-              if is_span
-                s = q.shift
-                s.on_completed
-              end
-              create_timer.call
+              window = Subject.new
+              q.push window
+              start_sub.subscription = scheduler.schedule_relative(time_shift, start_window)
+              observer.on_next window
             end
-          })
-        }
+          end
+        end
 
-        q.push(Subject.new)
-        observer.on_next(q[0].add_ref(ref_count_subscription))
-        create_timer.call
+        start_window.call
 
         new_obs = Observer.configure do |o|
           o.on_next do |x|
-            gate.synchronize do
-              q.each {|s| s.on_next x}
-            end
+            windows = gate.synchronize { q.dup }
+            windows.each { |s| s.on_next x }
           end
 
           o.on_error do |err|
             gate.synchronize do
-              q.each {|s| s.on_error err}
+              stopped = true
+              q.each { |s| s.on_error err }
               observer.on_error err
             end
           end
 
           o.on_completed do
             gate.synchronize do
-              q.each {|s| s.on_completed}
+              stopped = true
+              q.each { |s| s.on_completed }
               observer.on_completed
             end
           end
         end
 
-        group_subscription.push subscribe(new_obs)
+        subscription = subscribe(new_obs)
 
-        ref_count_subscription
+        CompositeSubscription.new [start_sub, close_subs, subscription]
       end
     end
   end
