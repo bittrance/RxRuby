@@ -1,9 +1,14 @@
+require 'time'
+
 module Rx
   module Observable
     def delay(due_time, scheduler = DefaultScheduler.instance)
       if Time === due_time
         delay_date(due_time, scheduler)
+      elsif DateTime === due_time
+        delay_date(due_time.to_time, scheduler)
       else
+        raise ArgumentError, 'due_time must be at least 0' if due_time < 0
         delay_time_span(due_time, scheduler)
       end
     end
@@ -12,64 +17,52 @@ module Rx
 
     def delay_time_span(due_time, scheduler)
       AnonymousObservable.new do |observer|
-        active = false
-        cancelable = SerialSubscription.new
-        exception = nil
+        gate = Mutex.new
         q = []
-        running = false
-        subscription = materialize.timestamp(scheduler).subscribe do |notification|
-          if notification[:value].on_error?
-            q = []
-            q.push notification
-            exception = notification[:value].error
-            should_run = !running
-          else
-            q.push({ value: notification[:value], timestamp: notification[:timestamp] + due_time })
-            should_run = !active
-            active = true
+        state = :running
+        cancelable = SerialSubscription.new
+        subscription = nil
+        new_obs = Observer.configure do |o|
+          o.on_next do |x|
+            size = nil
+            gate.synchronize do
+              size = q.size
+              q << [scheduler.now + due_time, x]
+            end
+            if size == 0 && state == :running
+              cancelable.subscription = scheduler.schedule_recursive_relative(due_time,  lambda do |this|
+                v = nil
+                next_time = nil
+                gate.synchronize do
+                  _, v = q.shift
+                  next_time, _ = q.first
+                end
+                observer.on_next(v)
+                if next_time.nil? && state == :complete
+                  observer.on_completed
+                elsif !next_time.nil? && state != :dead
+                  next_due = next_time - scheduler.now
+                  this.call(next_due)
+                end
+              end)
+            end
           end
 
-          if should_run
-            if exception != nil
-              observer.on_error exception
-            else
-              d = SingleAssignmentSubscription.new
-              cancelable.subscription = d
+          o.on_error do |err|
+            state = :dead
+            cancelable.unsubscribe
+            observer.on_error(err)
+          end
 
-              d.subscription = scheduler.schedule_recursive_relative(due_time, lambda {|this|
-                return if exception != nil
-
-                running = true
-                begin
-                  result = nil
-                  if q.length > 0 && q[0][:timestamp] - scheduler.now <= 0
-                    result = q.shift[:value]
-                  end
-                  if result != nil
-                    result.accept observer
-                  end
-                end while result != nil
-
-                should_recurse = false
-                recurse_due_time = 0
-                if q.length > 0
-                  should_recurse = true
-                  recurse_due_time = [0, q[0][:timestamp] - scheduler.now].max
-                else
-                  active = false
-                end
-                e = exception
-                running = false
-                if e != nil
-                  observer.on_error e
-                elsif should_recurse
-                  this.call recurse_due_time
-                end
-              })
-            end
+          o.on_completed do
+            state = :complete
+            subscription.unsubscribe if subscription
+            observer.on_completed if q.size == 0
           end
         end
 
+        subscription = subscribe(new_obs)
+        subscription.unsubscribe if state == :complete
         CompositeSubscription.new [subscription, cancelable]
       end
     end
