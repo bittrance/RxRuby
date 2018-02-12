@@ -26,7 +26,7 @@ module Rx
               lambda {|e|
                 finished = true
                 subscriber.on_error e
-                group.dispose
+                group.unsubscribe
               },
               lambda {
                 if !finished
