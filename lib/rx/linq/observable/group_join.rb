@@ -80,7 +80,7 @@ module Rx
             begin
               duration = right_duration_selector.call(value)
             rescue => err
-              right_map.values.each {|v| v.on_error(err) }
+              left_map.values.each {|s| s.on_error(err) }
               observer.on_error(err)
               next
             end
