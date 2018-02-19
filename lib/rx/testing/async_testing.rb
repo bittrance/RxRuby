@@ -21,12 +21,10 @@ module Rx
       flunk "Array expected to be at least #{expected} items but was #{array}"
     end
 
-    private
-
     def await_criteria(timeout)
       deadline = Time.now + timeout
       while Time.now < deadline
-        sleep timeout / 10
+        sleep timeout / 20
         return true if yield
       end
       return false
