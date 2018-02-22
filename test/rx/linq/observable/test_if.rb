@@ -1,54 +1,45 @@
-require "#{File.dirname(__FILE__)}/../../../test_helper"
+require 'test_helper'
 
-class TestObservableCreation < Minitest::Test
-  include Rx::ReactiveTest
+class TestOperatorIf < Minitest::Test
+  include Rx::MarbleTesting
 
   def test_if
-    scheduler = Rx::TestScheduler.new
-
-    called = false
-    res = scheduler.configure do
-      xs = Rx::Observable.if(
-        lambda { called = true; true },
-        scheduler.create_cold_observable(
-          on_next(100, scheduler.now),
-          on_completed(200)
-        )
+    actual = scheduler.configure do
+      Rx::Observable.if(
+        lambda { true },  cold('-1|'), cold('2|')
       )
-      refute called
-      xs
     end
 
-    msgs = [on_next(300, 100), on_completed(400)]
-    assert_messages msgs, res.messages
+    assert_msgs msgs('---1|'), actual
   end
 
   def test_if_else
-    scheduler = Rx::TestScheduler.new
-
-    res = scheduler.configure do
+    actual = scheduler.configure do
       Rx::Observable.if(
-        lambda { false },
-        scheduler.create_cold_observable(on_completed(100)),
-        scheduler.create_cold_observable(on_completed(101))
+        lambda { false }, cold('-1|'), cold('2|')
       )
     end
 
-    msgs = [on_completed(301)]
-    assert_messages msgs, res.messages
+    assert_msgs msgs('--2|'), actual
   end
 
   def test_if_not
-    scheduler = Rx::TestScheduler.new
-
-    res = scheduler.configure do
+    actual = scheduler.configure do
       Rx::Observable.if(
-        lambda { false },
-        scheduler.create_cold_observable(on_completed(200))
+        lambda { false }, cold('-1|')
       )
     end
 
-    msgs = [on_completed(200)]
-    assert_messages msgs, res.messages
+    assert_msgs msgs('--|'), actual
+  end
+
+  def test_raises
+    actual = scheduler.configure do
+      Rx::Observable.if(
+        lambda { raise error }, cold('-1|')
+      )
+    end
+
+    assert_msgs msgs('--#'), actual
   end
 end
