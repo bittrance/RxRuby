@@ -36,6 +36,14 @@ class TestDefaultScheduler < Minitest::Test
     refute_equal([id], state)
   end
 
+  def test_schedule_recursive_absolute_non_recursive
+    task = ->(a) { a.call(Time.now) }
+
+    subscription = @scheduler.schedule_recursive_absolute(Time.now, task)
+    await_criteria(2) { subscription.subscription && subscription.subscription.length == 1 }
+    subscription.unsubscribe
+  end
+
   def test_schedule_action_cancel
     task = -> { flunk "This should not run." }
     subscription = @scheduler.schedule_relative(0.05, task)
