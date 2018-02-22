@@ -34,6 +34,7 @@ module Rx
       should_unsubscribe = false
       @gate.synchronize do
         should_unsubscribe = !@unsubscribed
+        @unsubscribed = true
       end
 
       @unsubscribe_action.call if should_unsubscribe

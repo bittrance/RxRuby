@@ -10,12 +10,14 @@ class TestSubscription < Minitest::Test
   end
 
   def test_create_dispose
-    unsubscribed = false
-    d = Rx::Subscription.create { unsubscribed = true }
-    refute unsubscribed
+    unsubscribed = 0
+    d = Rx::Subscription.create { unsubscribed += 1 }
+    assert_equal 0, unsubscribed
 
     d.unsubscribe
-    assert unsubscribed
+    assert_equal 1, unsubscribed
+    d.unsubscribe
+    assert_equal 1, unsubscribed
   end
 
   def test_empty
