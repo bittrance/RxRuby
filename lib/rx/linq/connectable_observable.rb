@@ -19,15 +19,23 @@ module Rx
 
     def ref_count
       count = 0
+      gate = Mutex.new
+      connectable_subscription = nil
       AnonymousObservable.new do |observer|
-        count += 1
-        should_connect = true if count == 1
-        connectable_subscription = self.connect if should_connect
-        Subscription.create {
-          @subscription.unsubscribe
-          count -= 1
-          connectable_subscription.unsubscribe if count == 0
-        }
+        gate.synchronize do
+          count += 1
+          connectable_subscription ||= connect
+        end
+        new_obs = subscribe(observer)
+        counting_sub = Subscription.create do
+          gate.synchronize do
+            if (count -= 1) == 0
+              connectable_subscription.unsubscribe
+            end
+          end
+        end
+
+        CompositeSubscription.new [new_obs, counting_sub]
       end
     end
   end
