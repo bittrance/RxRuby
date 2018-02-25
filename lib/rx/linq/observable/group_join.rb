@@ -92,6 +92,8 @@ module Rx
                 observer.on_error(e)
               },
               expire)
+
+            left_map.values.each { |s| s.on_next(value) }
           }
 
           o.on_error {|e|
