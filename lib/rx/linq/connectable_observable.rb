@@ -18,6 +18,7 @@ module Rx
     end
 
     def ref_count
+      raise 'Cannot create ref counter when already connected' if @has_subscription
       count = 0
       gate = Mutex.new
       connectable_subscription = nil
