@@ -66,49 +66,6 @@ module Rx
       end
     end
 
-    # Invokes the observer's methods for each message in the source sequence.
-    # This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
-    def tap(observer)
-      raise ArgumentError.new 'Observer cannot be nil' unless observer
-      AnonymousObservable.new do |obs|
-        new_obs = Rx::Observer.configure do |o|
-
-          o.on_next do |value|
-            begin
-              observer.on_next value
-            rescue => err
-              obs.on_error err
-            end
-
-            obs.on_next value
-          end
-
-          o.on_error do |err|
-            begin
-              observer.on_error err
-            rescue => e
-              obs.on_error e
-            end
-
-            obs.on_error err
-          end
-
-          o.on_completed do
-            begin
-              observer.on_completed
-            rescue => err
-              obs.on_error err
-            end
-
-            obs.on_completed
-          end
-
-        end
-
-        subscribe new_obs
-      end
-    end
-
     # Invokes a specified action after the source observable sequence terminates gracefully or exceptionally.
     def ensures
       AnonymousObservable.new do |observer|
