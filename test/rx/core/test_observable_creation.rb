@@ -7,38 +7,8 @@ class TestObservableCreation < Minitest::Test
 
   # Create Methods
 
-  def test_create_next
-    scheduler = Rx::TestScheduler.new
-
-    res = scheduler.configure do 
-      Rx::Observable.create do |obs|
-        obs.on_next 1
-        obs.on_next 2
-        Rx::Subscription.empty
-      end
-    end
-
-    assert_messages [on_next(200, 1), on_next(200, 2)], res.messages
-  end
-
-  def test_create_next_nil
-    scheduler = Rx::TestScheduler.new
-
-    res = scheduler.configure do 
-      Rx::Observable.create do |obs|
-        obs.on_next 1
-        obs.on_next 2
-        nil
-      end
-    end
-    
-    assert_messages [on_next(200, 1), on_next(200, 2)], res.messages
-  end
-
   def test_create_completed
-    scheduler = Rx::TestScheduler.new
-
-    res = scheduler.configure do 
+    res = scheduler.configure do
       Rx::Observable.create do |obs|
         obs.on_completed
         obs.on_next 100
