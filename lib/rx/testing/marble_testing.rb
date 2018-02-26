@@ -89,5 +89,10 @@ module Rx
       messages = msgs(events, values)
       scheduler.create_cold_observable(*messages)
     end
+
+    def hot(events, values = {})
+      messages = msgs(events, values)
+      scheduler.create_hot_observable(*messages)
+    end
   end
 end
