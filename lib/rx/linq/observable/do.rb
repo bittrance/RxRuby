@@ -1,4 +1,6 @@
 module Rx
+  # Invokes the observer's methods for each message in the source sequence.
+  # This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
   module Observable
     # Invokes the observer's methods for each message in the source sequence.
     # This method can be used for debugging, logging, etc. of query behavior by intercepting the message stream to run arbitrary actions for messages on the pipeline.
