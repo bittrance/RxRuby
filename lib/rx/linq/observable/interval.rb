@@ -1,5 +1,7 @@
-module Rx::Observable
-  def self.interval(period, scheduler = Rx::DefaultScheduler.instance)
-    observable_timer_time_span_and_period(period, period, scheduler)
+module Rx
+  class << Observable
+    def interval(period, scheduler = Rx::DefaultScheduler.instance)
+      self.timer(period, period, scheduler)
+    end
   end
 end
