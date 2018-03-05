@@ -52,26 +52,6 @@ module Rx
       auto_detach_observer
     end
 
-    # Subscribes the given block to the on_next action of the observable sequence.
-    # @param [Object] block
-    # @return [Subscription]
-    def subscribe_on_next(&block)
-      raise ArgumentError.new 'Block is required' unless block_given?
-      subscribe(Observer.configure {|o| o.on_next(&block) })
-    end
-
-    # Subscribes the given block to the on_error action of the observable sequence.
-    def subscribe_on_error(&block)
-      raise ArgumentError.new 'Block is required' unless block_given?
-      subscribe(Observer.configure {|o| o.on_error(&block) })
-    end
-
-    # Subscribes the given block to the on_completed action of the observable sequence.
-    def subscribe_on_completed(&block)
-      raise ArgumentError.new 'Block is required' unless block_given?
-      subscribe(Observer.configure {|o| o.on_completed(&block) })
-    end
-
     private
 
     def schedule_subscribe(_, auto_detach_observer)
