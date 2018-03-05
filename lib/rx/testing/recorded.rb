@@ -3,15 +3,5 @@
 module Rx
 
   # Record of a value including the virtual time it was produced on.
-  class Recorded < Struct.new(:time, :value)
-
-    def initialize(time, value)
-      super
-    end    
-
-    def to_s
-      "#{value} @ #{time}"
-    end
-
-  end
+  class Recorded < Struct.new(:time, :value) ; end
 end
