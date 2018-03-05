@@ -73,15 +73,11 @@ module Rx
       @stopped = true
     end
 
-    def dispose
-      unsubscribe
-    end
-
     # Notifies the observer of a new element in the sequence.
     def on_next(value)
       @config.on_next_action.call value unless @stopped
     end
-    
+
     # Notifies the observer that an exception has occurred.
     def on_error(error)
       raise 'Error cannot be nil' unless error

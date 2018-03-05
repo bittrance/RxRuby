@@ -44,11 +44,11 @@ module Rx
             observer.method(:on_error),
             lambda {
               at_end = true
-              subscription.dispose
+              subscription.unsubscribe
               done.call
             })
         }
-        
+
         if !sub_delay
           start.call
         else

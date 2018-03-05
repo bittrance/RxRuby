@@ -21,13 +21,13 @@ module Rx
             })
           },
           lambda {|e|
-            cancelable.dispose
+            cancelable.unsubscribe
             observer.on_error e
             hasvalue = false
             id += 1
           },
           lambda {
-            cancelable.dispose
+            cancelable.unsubscribe
             observer.on_next value if hasvalue
             observer.on_completed
             hasvalue = false
