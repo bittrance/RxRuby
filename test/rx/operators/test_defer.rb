@@ -4,56 +4,29 @@ class TestCreationDefer < Minitest::Test
   include Rx::MarbleTesting
 
   def test_defer_complete
-    scheduler = Rx::TestScheduler.new 
+    source      = cold('  -1|')
+    expected    = msgs('---1|')
+    source_subs = subs('  ^ !')
 
-    invoked = 0
-    xs = nil
-
-    res = scheduler.configure do 
-      Rx::Observable.defer do
-        invoked += 1
-
-        xs = scheduler.create_cold_observable(
-          on_next(100, scheduler.now),
-          on_completed(200)
-        )
-        xs
-      end
+    actual = scheduler.configure do 
+      Rx::Observable.defer { source }
     end
 
-    msgs = [on_next(300, 200), on_completed(400)]
-    assert_messages msgs, res.messages
-
-    assert_equal 1, invoked
-
-    assert_subscriptions [subscribe(200, 400)], xs.subscriptions
+    assert_msgs expected, actual
+    assert_subs source_subs, source
   end
 
   def test_defer_error
-    scheduler = Rx::TestScheduler.new
+    source      = cold('  -#')
+    expected    = msgs('---#')
+    source_subs = subs('  ^!')
 
-    invoked = 0
-    xs = nil
-    err = RuntimeError.new
-
-    res = scheduler.configure do
-      Rx::Observable.defer do
-        invoked += 1
-
-        xs = scheduler.create_cold_observable(
-          on_next(100, scheduler.now),
-          on_error(200, err)
-        )
-        xs
-      end
+    actual = scheduler.configure do 
+      Rx::Observable.defer { source }
     end
 
-    msgs = [on_next(300, 200), on_error(400, err)]
-    assert_messages msgs, res.messages    
-
-    assert_equal 1, invoked
-
-    assert_subscriptions [subscribe(200, 400)], xs.subscriptions     
+    assert_msgs expected, actual
+    assert_subs source_subs, source     
   end
 
   def test_defer_unsubscribe
@@ -84,21 +57,10 @@ class TestCreationDefer < Minitest::Test
   end
 
   def test_defer_raise
-    scheduler = Rx::TestScheduler.new 
-
-    invoked = 0
-    err = RuntimeError.new
-
-    res = scheduler.configure do 
-      Rx::Observable.defer do
-        invoked += 1
-        raise err
-      end
+    actual = scheduler.configure do 
+      Rx::Observable.defer { raise error }
     end
 
-    msgs = [on_error(200, err)]
-    assert_messages msgs, res.messages    
-
-    assert_equal 1, invoked     
+    assert_msgs msgs('--#'), actual
   end
 end
