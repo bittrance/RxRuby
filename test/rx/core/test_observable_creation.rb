@@ -5,19 +5,6 @@ require "#{File.dirname(__FILE__)}/../../test_helper"
 class TestObservableCreation < Minitest::Test
   include Rx::ReactiveTest
 
-  # Never methods
-
-  def test_never_basic
-    scheduler = Rx::TestScheduler.new
-
-    res = scheduler.configure do
-      Rx::Observable.never
-    end
-
-    msgs = []
-    assert_messages msgs, res.messages
-  end
-
   # Repeat methods
 =begin
 # the clock is actually off, because of not using the `scheduler.schedule_recursive`
