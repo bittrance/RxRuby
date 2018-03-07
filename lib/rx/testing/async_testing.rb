@@ -13,12 +13,16 @@ module Rx
 
     def await_array_length(array, expected, timeout = 2)
       return if await(timeout) { array.length == expected }
+      # :nocov: #
       flunk "Array expected to be #{expected} items but was #{array}"
+      # :nocov: #
     end
 
     def await_array_minimum_length(array, expected, timeout = 2)
       return if await(timeout) { array.length >= expected }
+      # :nocov: #
       flunk "Array expected to be at least #{expected} items but was #{array}"
+      # :nocov: #
     end
 
     def await_criteria(timeout, failure = nil, &block)
@@ -38,7 +42,9 @@ module Rx
         sleep Float(timeout) / 20
         return true if yield
       end
+      # :nocov: #
       return false
+      # :nocov: #
     end
   end
 end
