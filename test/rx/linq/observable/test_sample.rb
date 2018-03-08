@@ -1,62 +1,51 @@
-require "#{File.dirname(__FILE__)}/../../../test_helper"
+require 'test_helper'
 
-class TestObservableCreation < Minitest::Test
-  include Rx::ReactiveTest
+class TestOperatorSample < Minitest::Test
+  include Rx::MarbleTesting
 
   def test_sampler_completes_first
-    scheduler = Rx::TestScheduler.new
+    left       = cold('  1-2-3-')
+    right      = cold('  -1-1-1|')
+    expected   = msgs('---1-2-3|')
+    left_subs  = subs('  ^     !')
+    right_subs = subs('  ^     !')
 
-    res = scheduler.configure do
-      scheduler.create_cold_observable(
-        on_next(100, 1),
-        on_next(200, 2),
-        on_next(300, 3),
-        on_next(400, 4),
-        on_completed(600)
-      ).sample(
-        scheduler.create_cold_observable(
-          on_next(50, 1),
-          on_next(150, 1),
-          on_next(350, 1),
-          on_completed(400)
-        )
-      )
+    actual = scheduler.configure do
+      left.sample(right)
     end
 
-    msgs = [
-      on_next(SUBSCRIBED + 150, 1),
-      on_next(SUBSCRIBED + 350, 3),
-      on_completed(600)
-    ]
-    assert_messages msgs, res.messages
+    assert_msgs expected, actual
+    assert_subs left_subs, left
+    assert_subs right_subs, right
   end
 
   def test_source_completes_first
-    scheduler = Rx::TestScheduler.new
+    left       = cold('  1-2-3-4|')
+    right      = cold('  -----1-')
+    expected   = msgs('-------3-|')
+    left_subs  = subs('  ^      !')
+    right_subs = subs('  ^      !')
 
-    res = scheduler.configure do
-      scheduler.create_cold_observable(
-        on_next(100, 1),
-        on_completed(200)
-      ).sample(
-        scheduler.create_cold_observable(
-          on_next(50, 1),
-          on_next(150, 1),
-          on_completed(400)
-        )
-      )
+    actual = scheduler.configure do
+      left.sample(right)
     end
 
-    msgs = [
-      on_next(SUBSCRIBED + 150, 1),
-      on_completed(400)
-    ]
-    assert_messages msgs, res.messages
+    assert_msgs expected, actual
+    assert_subs left_subs, left
+    assert_subs right_subs, right
+  end
+
+  def test_respect_nil
+    left       = cold('  n-1-n-|', n: nil)
+    right      = cold('  -n-1-n|', n: nil)
+    expected   = msgs('---n-1-n|', n: nil)
+
+    actual = scheduler.configure { left.sample(right) }
+
+    assert_msgs expected, actual
   end
 
   def test_with_recipe
-    scheduler = Rx::TestScheduler.new
-
     res = scheduler.configure do
       scheduler.create_cold_observable(
         on_next(100, 'left'),
@@ -77,9 +66,6 @@ class TestObservableCreation < Minitest::Test
   end
 
   def test_source_errors
-    # Verify unsubscribe sampler
-    scheduler = Rx::TestScheduler.new
-
     sampler = nil
     res = scheduler.configure do
       sampler = scheduler.create_cold_observable(
@@ -97,10 +83,6 @@ class TestObservableCreation < Minitest::Test
   end
 
   def test_sampler_errors
-    # Verify unsubscribe source
-    scheduler = Rx::TestScheduler.new
-
-    sampler = nil
     res = scheduler.configure do
       sampler = scheduler.create_cold_observable(
         on_error(50, 'badness'),
@@ -114,5 +96,22 @@ class TestObservableCreation < Minitest::Test
 
     msgs = [on_error(250, 'badness')]
     assert_messages msgs, res.messages
+  end
+
+
+  def test_recipe_raises
+    left       = cold('  1-')
+    right      = cold('  -1')
+    expected   = msgs('---#')
+    left_subs  = subs('  ^!')
+    right_subs = subs('  ^!')
+
+    actual = scheduler.configure do
+      left.sample(right) { raise error }
+    end
+
+    assert_msgs expected, actual
+    assert_subs left_subs, left
+    assert_subs right_subs, right
   end
 end
