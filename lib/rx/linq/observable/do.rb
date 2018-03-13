@@ -5,6 +5,8 @@ module Rx
         on_next_func = Proc.new
       elsif Proc === observer_or_on_next
         on_next_func = observer_or_on_next
+      elsif observer_or_on_next.nil?
+        on_next_func = nil
       else
         on_next_func = observer_or_on_next.method(:on_next)
         on_error_func = observer_or_on_next.method(:on_error)
@@ -14,7 +16,7 @@ module Rx
         subscribe(
           lambda {|x|
             begin
-              on_next_func.call x
+              on_next_func && on_next_func.call(x)
             rescue => e
               observer.on_error e
             end
