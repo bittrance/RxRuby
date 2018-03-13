@@ -37,7 +37,7 @@ module Rx
        @gate.synchronize { @queue.push(lambda { @observer.on_completed }) }
     end
 
-    def ensure_active(n=0)
+    def ensure_active
       owner = false
 
       @gate.synchronize do
@@ -63,11 +63,11 @@ module Rx
 
       begin
         work.call
-      rescue => e
+      rescue => err
         @queue = []
         @faulted = true
-
-        raise e
+        @observer.on_error err
+        return
       end
 
       recurse.call state
