@@ -55,14 +55,6 @@ module Rx
         yield config if block_given?
         ObserverBase.new config
       end
-
-      def create(on_next = nil, on_error = nil, on_completed = nil)
-        configure do |o|
-          o.on_next(&on_next) if on_next
-          o.on_error(&on_error) if on_error
-          o.on_completed(&on_completed) if on_completed
-        end
-      end
     end
 
   end
@@ -81,15 +73,11 @@ module Rx
       @stopped = true
     end
 
-    def dispose
-      unsubscribe
-    end
-
     # Notifies the observer of a new element in the sequence.
     def on_next(value)
       @config.on_next_action.call value unless @stopped
     end
-    
+
     # Notifies the observer that an exception has occurred.
     def on_error(error)
       raise 'Error cannot be nil' unless error

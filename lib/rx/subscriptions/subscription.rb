@@ -5,20 +5,14 @@ require 'singleton'
 
 module Rx
   module Subscription
-    def dispose
-      unsubscribe
+    def unsubscribe
     end
   end
-  Disposable = Subscription
 
   class EmptySubscription
 
     include Subscription
     include Singleton
-
-    def unsubscribe
-
-    end
   end
 
   class AnonymousSubscription

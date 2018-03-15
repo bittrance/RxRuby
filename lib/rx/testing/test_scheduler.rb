@@ -26,21 +26,6 @@ module Rx
       super(state, due_time, action)
     end
 
-    # Adds a relative virtual time to an absolute virtual time value.
-    def add(absolute, relative)
-      absolute + relative
-    end
-
-    # Converts the absolute time value to a Time value.
-    def to_time(absolute)
-      Time.at absolute
-    end
-
-    # Converts the time span value to a relative time value.
-    def to_relative(time_span)
-      time_span
-    end    
-
     # Starts the test scheduler and uses the specified virtual times to invoke the factory function, subscribe to the resulting sequence, and unsubscribe the subscription.
     def configure(options = {})
       options.each {|key,_|
