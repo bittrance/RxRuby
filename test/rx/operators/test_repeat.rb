@@ -1,5 +1,32 @@
 require 'test_helper'
 
+class TestCreationRepeat < Minitest::Test
+  include Rx::MarbleTesting
+
+  def test_repeat_letter
+    actual = scheduler.configure { Rx::Observable.repeat('a', 3, scheduler) }
+    assert_msgs msgs('--(aaa|)'), actual
+  end
+end
+
+class TestCreationRepeat < Minitest::Test
+  include Rx::ReactiveTest
+
+  def test_repeat_infinitely_dispose
+    scheduler = Rx::TestScheduler.new
+
+    res = scheduler.configure(:disposed => 203) do
+      Rx::Observable.repeat_infinitely({a: 1}, scheduler)
+    end
+
+    msgs = [
+        on_next(201, {a: 1}),
+        on_next(202, {a: 1})
+    ]
+    assert_messages msgs, res.messages
+  end
+end
+
 class TestOperatorRepeat < Minitest::Test
   include Rx::AsyncTesting
   include Rx::MarbleTesting
