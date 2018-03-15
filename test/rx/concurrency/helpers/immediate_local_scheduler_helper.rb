@@ -38,14 +38,14 @@ module ImmediateLocalSchedulerTestHelper
     @scheduler.schedule_relative_with_state(state, 0, task)
 
     assert_equal([1], state)
-  end 
+  end
 
   def test_schedule_recursive_relative_with_state_simple
     state = []
     inner = ->(_, s) { s << 1 }
-    outer = ->(sched, s) { sched.schedule_relative_with_state(s, 1, inner) }
-    @scheduler.schedule_relative_with_state(state, 1, outer)
+    outer = ->(sched, s) { sched.schedule_relative_with_state(s, 0, inner) }
+    @scheduler.schedule_relative_with_state(state, 0, outer)
 
     assert_equal([1], state)
-  end 
+  end
 end
