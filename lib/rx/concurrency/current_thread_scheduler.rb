@@ -23,7 +23,7 @@ module Rx
     def schedule_relative_with_state(state, due_time, action)
       raise 'action cannot be nil' unless action
 
-      dt = self.now.to_i + Scheduler.normalize(due_time)
+      dt = now.to_i + Scheduler.normalize(due_time)
       si = ScheduledItem.new self, state, dt, &action
 
       local_queue = Thread.current[:queue]
@@ -35,7 +35,7 @@ module Rx
         Thread.current[:queue] = local_queue
 
         begin
-          self.class.run_trampoline local_queue
+          run_trampoline local_queue
         ensure
           Thread.current[:queue] = nil
         end
@@ -48,18 +48,14 @@ module Rx
 
     private
 
-    class << self
-      def run_trampoline(queue)
-        while item = queue.shift
-          unless item.cancelled?
-            wait = item.due_time - Scheduler.now.to_i
-            sleep wait if wait > 0
-            item.invoke unless item.cancelled?
-          end
+    def run_trampoline(queue)
+      while item = queue.shift
+        unless item.cancelled?
+          wait = item.due_time - now.to_i
+          sleep wait if wait > 0
+          item.invoke unless item.cancelled?
         end
       end
-
     end
-
   end
 end
