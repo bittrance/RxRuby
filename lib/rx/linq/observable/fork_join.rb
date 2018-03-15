@@ -26,23 +26,20 @@ module Rx
               lambda {|e|
                 finished = true
                 subscriber.on_error e
-                group.dispose
+                group.unsubscribe
               },
               lambda {
                 if !finished
-                  if !has_results[i]
+                  if has_results[i]
+                    has_completed[i] = true
+                    unless has_completed.include?(nil)
+                      finished = true
+                      subscriber.on_next results
                       subscriber.on_completed
-                      return
-                  end
-                  has_completed[i] = true
-                  count.times {|ix|
-                    if !has_completed[ix]
-                      return
                     end
-                  }
-                  finished = true
-                  subscriber.on_next results
-                  subscriber.on_completed
+                  else
+                    subscriber.on_completed
+                  end
                 end
               }
             )
