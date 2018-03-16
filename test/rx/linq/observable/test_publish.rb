@@ -34,4 +34,17 @@ class TestOperatorPublish < Minitest::Test
     assert_msgs expected, actual
     assert_subs source_subs, source
   end
+
+  def test_selector_raises
+    source      = cold('  -1|')
+    expected    = msgs('--#')
+    source_subs = subs('')
+
+    actual = scheduler.configure do
+      source.publish { |_| raise error }
+    end
+
+    assert_msgs expected, actual
+    assert_subs source_subs, source
+  end
 end
