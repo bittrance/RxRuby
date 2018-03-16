@@ -384,6 +384,35 @@ class TestObserver < Minitest::Test
     assert_equal 1, n
   end
 
+  def test_dont_fail_exactly_once
+    n = 0
+
+    o = Rx::Observer.configure do |obs|
+      obs.on_next {|x| }
+      obs.on_error {|err| n += 1 }
+      obs.on_completed { }
+    end
+
+    assert o.fail(RuntimeError.new)
+    refute o.fail(RuntimeError.new)
+    assert_equal 1, n
+  end
+
+
+  def test_dont_fail_already_stopped_error
+    n = 0
+
+    o = Rx::Observer.configure do |obs|
+      obs.on_next {|x| }
+      obs.on_error {|err| n += 1 }
+      obs.on_completed { }
+    end
+
+    o.on_completed
+    refute o.fail(RuntimeError.new)
+    assert_equal 0, n
+  end
+
   def test_checked_reentrant_next
     n = 0
 
