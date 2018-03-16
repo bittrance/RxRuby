@@ -28,20 +28,22 @@ class TestObservableSynchronization < Minitest::Test
     Rx::Observable.just(1).subscribe_on(Rx::CurrentThreadScheduler.instance).subscribe
   end
 
-  def test_subscribe_on_default_scheduler_with_merging
+  def test_subscribe_on_default_scheduler_with_merge_all
     observer = @scheduler.create_observer
-    Rx::Observable.of(Rx::Observable.from([1, 2]), Rx::Observable.from([3, 4]))
+    Rx::Observable.of(Rx::Observable.from([1, 2, 3]), Rx::Observable.from([4, 5, 6]))
       .subscribe_on(Rx::DefaultScheduler.instance)
       .merge_all
       .subscribe(observer)
 
-    await_array_length(observer.messages, 5)
+    await_array_length(observer.messages, 7, 4)
 
     expected = [
       on_next(0, 1),
       on_next(0, 2),
-      on_next(0, 3),
       on_next(0, 4),
+      on_next(0, 3),
+      on_next(0, 5),
+      on_next(0, 6),
       on_completed(0)
     ]
     assert_messages expected, observer.messages
