@@ -15,7 +15,7 @@ subject.subscribe(observer)
 
 connected = source.connect
 
-subscription.dispose
+subscription.unsubscribe
 
 # => Next: 0
 # => Next: 0

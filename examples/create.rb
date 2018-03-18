@@ -25,7 +25,7 @@ subscription = source.subscribe(
 # => Next: 42
 # => Completed
 
-subscription.dispose
+subscription.unsubscribe
 
 # => disposed
 
@@ -35,7 +35,7 @@ source = Rx::Observable.create {|observer|
     observer.on_completed
 
     # Note that this is optional, you do not have to return this if you require no cleanup
-    Rx::Disposable.create {
+    Rx::Subscription.create {
         puts 'disposed'
     }
 }

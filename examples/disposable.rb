@@ -1,12 +1,12 @@
 require 'rx'
 
-disposable = Rx::Disposable.create {
+subscription = Rx::Subscription.create {
     puts 'disposed'
 }
 
-disposable.dispose
+subscription.unsubscribe
 # => disposed
 
-disposable = Rx::Disposable.empty
+subscription = Rx::Subscription.empty
 
-disposable.dispose # Does nothing
+subscription.unsubscribe # Does nothing
