@@ -19,7 +19,3 @@ subscription = source.subscribe(
 # => Next: 56
 # => Next: 72
 # => Completed
-
-while Thread.list.size > 1
-  (Thread.list - [Thread.current]).each &:join
-end
