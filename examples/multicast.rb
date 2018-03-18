@@ -4,17 +4,11 @@ subject = Rx::Subject.new
 source = Rx::Observable.range(0, 3)
     .multicast(subject)
 
-observer = Rx::Observer.create(
-    lambda {|x|
-        puts 'Next: ' + x.to_s
-    },
-    lambda {|err|
-        puts 'Error: ' + err.to_s
-    },
-    lambda {
-        puts 'Completed'
-    }
-)
+observer = Rx::Observer.configure do |o|
+  o.on_next {|x| puts 'Next: ' + x.to_s }
+  o.on_error {|err| puts 'Error: ' + err.to_s }
+  o.on_completed { puts 'Completed' }
+end
 
 subscription = source.subscribe(observer)
 subject.subscribe(observer)
