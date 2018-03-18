@@ -8,16 +8,11 @@ source = interval
     .do {|x| puts 'Side effect' }
 
 def create_observer(tag)
-    Rx::Observer.create(
-        lambda {|x|
-            puts 'Next: ' + tag + x.to_s
-        },
-        lambda {|err|
-            puts 'Error: ' + err.to_s
-        },
-        lambda {
-            puts 'Completed'
-        })
+  Rx::Observer.configure do |o|
+    o.on_next {|x| puts 'Next: ' + tag + x.to_s }
+    o.on_error {|err| puts 'Error: ' + err.to_s }
+    o.on_completed { puts 'Completed' }
+  end
 end
 
 source.subscribe(create_observer('SourceA'))
@@ -44,19 +39,6 @@ interval = Rx::Observable.interval(1)
 source = interval
     .take(2)
     .do {|x| puts 'Side effect' }
-
-def create_observer(tag)
-    Rx::Observer.create(
-        lambda {|x|
-            puts 'Next: ' + tag + x.to_s
-        },
-        lambda {|err|
-            puts 'Error: ' + err.to_s
-        },
-        lambda {
-            puts 'Completed'
-        })
-end
 
 published = source.publish
 

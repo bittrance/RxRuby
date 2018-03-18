@@ -47,6 +47,6 @@ subscription = source.subscribe(
 # => Next: 42
 # => Completed
 
-subscription.dispose
+subscription.unsubscribe
 
 # => Disposed
