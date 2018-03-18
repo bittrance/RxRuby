@@ -8,6 +8,9 @@ module Rx
           selector.call(connectable).subscribe(observer)
         end
       else
+        unless selector.nil?
+          raise ArgumentError, 'When passing single subject, selector is not supported.'
+        end
         ConnectableObservable.new(self, subject_or_subject_selector)
       end
     end
