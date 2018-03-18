@@ -22,22 +22,32 @@ module Rx
       config.on_error(&method(:on_error_core))
       config.on_completed(&method(:on_completed_core))
 
-      super(config)      
+      super(config)
     end
 
     def on_next_core(value)
       @gate.synchronize { @queue.push(lambda { @observer.on_next value }) }
+      ensure_active
     end
 
     def on_error_core(error)
-       @gate.synchronize { @queue.push(lambda { @observer.on_error error }) }
+      @gate.synchronize { @queue.push(lambda { @observer.on_error error }) }
+      ensure_active
     end
 
     def on_completed_core
-       @gate.synchronize { @queue.push(lambda { @observer.on_completed }) }
+      @gate.synchronize { @queue.push(lambda { @observer.on_completed }) }
+      ensure_active
     end
 
-    def ensure_active(n=0)
+    def unsubscribe
+      super
+      @subscriber.unsubscribe
+    end
+
+    private
+
+    def ensure_active
       owner = false
 
       @gate.synchronize do
@@ -63,21 +73,14 @@ module Rx
 
       begin
         work.call
-      rescue => e
+      rescue => err
         @queue = []
         @faulted = true
-
-        raise e
+        @observer.on_error err
+        return
       end
 
       recurse.call state
     end
-
-    def unsubscribe
-      super
-      @subscriber.unsubscribe
-    end
-
   end
-
 end

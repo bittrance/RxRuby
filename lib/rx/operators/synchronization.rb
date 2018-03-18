@@ -27,13 +27,13 @@ module Rx
         d
       end
     end
-  
+
     # Wraps the source sequence in order to run its observer callbacks on the specified scheduler.
     def observe_on(scheduler)
       raise ArgumentError.new 'Scheduler cannot be nil' unless scheduler
 
       AnonymousObservable.new do |observer|
-        subscribe(ObserveOnObserver.new scheduler, observer)
+        subscribe(observer.notify_on(scheduler))
       end
     end
 
