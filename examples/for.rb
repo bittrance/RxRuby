@@ -3,11 +3,7 @@ require 'rx'
 #  Using Observables
 array = [1, 2, 3]
 
-source = Rx::Observable.for(
-    array,
-    lambda {|x|
-        Rx::Observable.return(x)
-    })
+source = Rx::Observable.for(array) { |x| Rx::Observable.return(x) }
 
 subscription = source.subscribe(
     lambda {|x|
