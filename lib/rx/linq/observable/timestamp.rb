@@ -1,8 +1,10 @@
 module Rx
+  Timestamp = Struct.new(:timestamp, :value)
+
   module Observable
     def timestamp(scheduler = DefaultScheduler.instance)
       map do |x|
-        { value: x, timestamp: scheduler.now }
+        Timestamp.new(scheduler.now, x)
       end
     end
   end

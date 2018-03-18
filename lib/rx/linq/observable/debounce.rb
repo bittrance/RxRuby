@@ -1,6 +1,7 @@
 module Rx
   module Observable
     def debounce(due_time, scheduler = DefaultScheduler.instance)
+      raise ArgumentError.new('due_time must be at least zero') if due_time < 0
       AnonymousObservable.new do |observer|
         cancelable = SerialSubscription.new
         hasvalue = false

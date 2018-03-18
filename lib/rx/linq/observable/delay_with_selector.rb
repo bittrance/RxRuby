@@ -1,12 +1,7 @@
 module Rx
   module Observable
-    def delay_with_selector(subscription_delay, delay_duration_selector = nil)
-      if Proc === subscription_delay
-        selector = subscription_delay
-      else
-        sub_delay = subscription_delay
-        selector = delay_duration_selector
-      end
+    def delay_with_selector(subscription_delay = nil, &block)
+      raise ArgumentError, 'Must provide a block' unless block_given?
 
       AnonymousObservable.new do |observer|
         delays = CompositeSubscription.new
@@ -21,7 +16,7 @@ module Rx
           subscription.subscription = subscribe(
             lambda {|x|
               begin
-                delay = selector.call(x)
+                delay = yield x
               rescue => error
                 observer.on_error error
                 return
@@ -49,13 +44,13 @@ module Rx
             })
         }
 
-        if !sub_delay
-          start.call
-        else
-          subscription.subscription = sub_delay.subscribe(
+        if subscription_delay
+          subscription.subscription = subscription_delay.subscribe(
             start,
             observer.method(:on_error),
             start)
+        else
+          start.call
         end
         CompositeSubscription.new [subscription, delays]
       end
