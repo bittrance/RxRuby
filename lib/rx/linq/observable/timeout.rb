@@ -4,12 +4,13 @@ module Rx
   module Observable
     def timeout(deadline, scheduler = CurrentThreadScheduler.instance)
       AnonymousObservable.new do |observer|
+        gate = Mutex.new
         serial = SerialSubscription.new
       
         setup_timeout = lambda do
           c = scheduler.schedule_relative(deadline, lambda do
             err = TimeoutError.new
-            observer.on_error(err)
+            gate.synchronize { observer.on_error(err) }
           end)
           serial.subscription = c
           c
@@ -19,16 +20,20 @@ module Rx
         new_obs = Observer.configure do |o|
           o.on_next do |v|
             cancelable.unsubscribe
-            cancelable = setup_timeout.call
-            observer.on_next(v)
+            gate.synchronize do
+              unless observer.stopped?
+                cancelable = setup_timeout.call
+                observer.on_next(v)
+              end
+            end
           end
           o.on_error do |err|
             cancelable.unsubscribe
-            observer.on_error(err)
+            gate.synchronize { observer.on_error(err) }
           end
           o.on_completed do
             cancelable.unsubscribe
-            observer.on_completed
+            gate.synchronize { observer.on_completed }
           end
         end
 
