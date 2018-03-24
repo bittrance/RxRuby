@@ -68,6 +68,10 @@ module Rx
       @stopped = false
     end
 
+    def stopped?
+      @stopped
+    end
+
     # Unsubscribes from the current observer causing it to transition to the stopped state.
     def unsubscribe
       @stopped = true
