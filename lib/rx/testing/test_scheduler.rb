@@ -21,6 +21,7 @@ module Rx
     def schedule_absolute_with_state(state, due_time, action)
       raise 'action cannot be nil' unless action
 
+      due_time = due_time.ts if TestTime === due_time
       due_time = now + 1 if due_time <= now && @increment_on_simultaneous
 
       super(state, due_time, action)
