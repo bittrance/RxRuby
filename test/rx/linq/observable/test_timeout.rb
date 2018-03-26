@@ -56,4 +56,31 @@ class TestOperatorTimeout < Minitest::Test
     assert_msgs expected, actual
     assert_subs source_subs, source
   end
+
+  def test_absolute_deadline_non_completing
+    err_check = ->(e) { e.is_a? Rx::TimeoutError }
+    source      = cold('  -1-|')
+    expected    = msgs('---1#', error: err_check)
+    source_subs = subs('  ^ !')
+
+    actual = scheduler.configure do
+      source.timeout(Rx::TestTime.new(400), scheduler)
+    end
+
+    assert_msgs expected, actual
+    assert_subs source_subs, source
+  end
+
+  def test_absolute_deadline_completing
+    source      = cold('  -|')
+    expected    = msgs('---|')
+    source_subs = subs('  ^!')
+
+    actual = scheduler.configure do
+      source.timeout(Rx::TestTime.new(400), scheduler)
+    end
+
+    assert_msgs expected, actual
+    assert_subs source_subs, source
+  end
 end

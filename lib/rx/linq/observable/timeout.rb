@@ -3,6 +3,42 @@ module Rx
 
   module Observable
     def timeout(deadline, scheduler = CurrentThreadScheduler.instance)
+      if Time === deadline
+        timeout_absolute(deadline, scheduler)
+      else
+        timeout_relative(deadline, scheduler)
+      end
+    end
+
+    private
+
+    def timeout_absolute(deadline, scheduler)
+      AnonymousObservable.new do |observer|
+        gate = Mutex.new
+        cancelable = scheduler.schedule_absolute(deadline, lambda do
+          err = TimeoutError.new
+          gate.synchronize { observer.on_error(err) }
+        end)
+
+        new_obs = Observer.configure do |o|
+          o.on_next do |v|
+            gate.synchronize { observer.on_next(v) }
+          end
+          o.on_error do |err|
+            cancelable.unsubscribe
+            gate.synchronize { observer.on_error(err) }
+          end
+          o.on_completed do
+            cancelable.unsubscribe
+            gate.synchronize { observer.on_completed }
+          end
+        end
+
+        CompositeSubscription.new [subscribe(new_obs), cancelable]
+      end
+    end
+
+    def timeout_relative(deadline, scheduler)
       AnonymousObservable.new do |observer|
         gate = Mutex.new
         serial = SerialSubscription.new
