@@ -21,7 +21,7 @@ module Rx
 
       @messages.each do |message|
         notification = message.value
-        @scheduler.schedule_at_relative_with_state(nil, message.time, lambda {|scheduler1, state1|
+        @scheduler.schedule_relative_with_state(nil, message.time, lambda {|scheduler1, state1|
 
           @observers.clone.each {|observer| notification.accept observer }
 
