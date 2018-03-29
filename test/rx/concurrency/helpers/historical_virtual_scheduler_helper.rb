@@ -35,7 +35,7 @@ module HistoricalVirtualSchedulerTestHelper
   def test_relative_with_state
     state = []
     task  = ->(_, s) { s.push 1 }
-    @scheduler.schedule_at_relative_with_state(state, 2, task)
+    @scheduler.schedule_relative_with_state(state, 2, task)
     @scheduler.start
 
     assert_equal([1], state)
@@ -45,7 +45,7 @@ module HistoricalVirtualSchedulerTestHelper
   def test_relative
     ran  = false
     task = ->() { ran = true }
-    @scheduler.schedule_at_relative(2, task)
+    @scheduler.schedule_relative(2, task)
     @scheduler.start
 
     assert_equal(true, ran)
@@ -58,7 +58,7 @@ module HistoricalVirtualSchedulerTestHelper
     state = []
     time  = @start + 2
     task  = ->(_, s) { s.push 1 }
-    @scheduler.schedule_at_absolute_with_state(state, time, task)
+    @scheduler.schedule_absolute_with_state(state, time, task)
     @scheduler.start
 
     assert_equal([1], state)
@@ -69,7 +69,7 @@ module HistoricalVirtualSchedulerTestHelper
     ran   = false
     time  = @start + 2
     task  = ->() { ran = true }
-    @scheduler.schedule_at_absolute(time, task)
+    @scheduler.schedule_absolute(time, task)
     @scheduler.start
 
     assert_equal(true, ran)
@@ -83,8 +83,8 @@ module HistoricalVirtualSchedulerTestHelper
     task    = ->() { ran = true }
     failure = ->() { flunk "Should never reach." }
 
-    @scheduler.schedule_at_absolute(@start + 10, task)
-    @scheduler.schedule_at_absolute(@start + 11, failure)
+    @scheduler.schedule_absolute(@start + 10, task)
+    @scheduler.schedule_absolute(@start + 11, failure)
     @scheduler.advance_to(@start + 10)
 
     assert_equal(true, ran)
@@ -105,8 +105,8 @@ module HistoricalVirtualSchedulerTestHelper
     task    = ->() { ran = true }
     failure = ->() { flunk "Should never reach." }
 
-    @scheduler.schedule_at_relative(10, task)
-    @scheduler.schedule_at_relative(11, failure)
+    @scheduler.schedule_relative(10, task)
+    @scheduler.schedule_relative(11, failure)
     @scheduler.advance_by(10)
 
     assert_equal(true, ran)
@@ -119,7 +119,7 @@ module HistoricalVirtualSchedulerTestHelper
 
   def test_sleep
     failure = ->() { flunk "Should not run." }
-    @scheduler.schedule_at_relative(10, failure)
+    @scheduler.schedule_relative(10, failure)
     @scheduler.sleep(20)
 
     assert_equal(@start + 20, @scheduler.now)

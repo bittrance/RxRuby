@@ -54,33 +54,32 @@ module Rx
     # Schedules an action to be executed.
     def schedule_with_state(state, action)
       raise 'action cannot be nil' unless action
-      schedule_at_absolute_with_state(state, @clock, action)
+      schedule_absolute_with_state(state, @clock, action)
     end
 
     # Schedules an action to be executed at due_time.
-    def schedule_at_relative(due_time, action)
+    def schedule_relative(due_time, action)
       raise 'action cannot be nil' unless action
 
-      schedule_at_relative_with_state(action, due_time, method(:invoke))
+      schedule_relative_with_state(action, due_time, method(:invoke))
     end
 
     # Schedules an action to be executed at due_time.
-    def schedule_at_relative_with_state(state, due_time, action)
+    def schedule_relative_with_state(state, due_time, action)
       raise 'action cannot be nil' unless action
 
-      schedule_at_absolute_with_state(state, @clock + due_time, action)
+      schedule_absolute_with_state(state, @clock + due_time, action)
     end
-    alias_method :schedule_relative_with_state, :schedule_at_relative_with_state
 
     # Schedules an action to be executed at due_time.
-    def schedule_at_absolute(due_time, action)
+    def schedule_absolute(due_time, action)
       raise 'action cannot be nil' unless action
 
-      schedule_at_absolute_with_state(action, due_time, method(:invoke))      
+      schedule_absolute_with_state(action, due_time, method(:invoke))
     end
 
     # Schedules an action to be executed at due_time.
-    def schedule_at_absolute_with_state(state, due_time, action)
+    def schedule_absolute_with_state(state, due_time, action)
       raise 'action cannot be nil' unless action
 
       si = nil
@@ -94,7 +93,6 @@ module Rx
 
       Subscription.create { si.cancel }
     end
-    alias_method :schedule_absolute_with_state, :schedule_at_absolute_with_state
 
     # Advances the scheduler's clock to the specified time, running all work till that point.
     def advance_to(time)

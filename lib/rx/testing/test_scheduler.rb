@@ -18,9 +18,10 @@ module Rx
     end
 
     # Schedules an action to be executed at due_time.
-    def schedule_at_absolute_with_state(state, due_time, action)
+    def schedule_absolute_with_state(state, due_time, action)
       raise 'action cannot be nil' unless action
 
+      due_time = due_time.ts if TestTime === due_time
       due_time = now + 1 if due_time <= now && @increment_on_simultaneous
 
       super(state, due_time, action)
@@ -43,24 +44,24 @@ module Rx
       subscription = nil
       observer = create_observer
 
-      schedule_at_absolute_with_state(nil, o[:created], lambda {|scheduler, state|
+      schedule_absolute_with_state(nil, o[:created], lambda {|scheduler, state|
         source = yield
         Subscription.empty
       })
 
-      schedule_at_absolute_with_state(nil, o[:subscribed], lambda {|scheduler, state|
+      schedule_absolute_with_state(nil, o[:subscribed], lambda {|scheduler, state|
         subscription = source.subscribe observer
         Subscription.empty
       })
 
-       schedule_at_absolute_with_state(nil, o[:disposed], lambda {|scheduler, state|
+       schedule_absolute_with_state(nil, o[:disposed], lambda {|scheduler, state|
         subscription.unsubscribe
         Subscription.empty
       })
 
       start
-      
-      observer           
+
+      observer
     end
 
     # Creates a hot observable using the specified timestamped notification messages.

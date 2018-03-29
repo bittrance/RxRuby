@@ -30,7 +30,7 @@ module Rx
       messages.each do |message|
         notification = message.value
 
-        d.push(@scheduler.schedule_at_relative_with_state(nil, message.time, lambda {|scheduler1, state1|
+        d.push(@scheduler.schedule_relative_with_state(nil, message.time, lambda {|scheduler1, state1|
           notification.accept observer
           Subscription.empty
         }))
