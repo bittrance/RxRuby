@@ -160,7 +160,7 @@ module Rx
         inner_obs = Observer.configure do |o|
           o.on_next do |inner_source|
             gate.synchronize do
-              if active < max_concurrent
+              if (active < max_concurrent) || max_concurrent == 0
                 active += 1
                 subscriber.call inner_source
               else
@@ -183,38 +183,7 @@ module Rx
 
     # Concatenates all inner observable sequences, as long as the previous observable sequence terminated successfully.
     def merge_all
-      AnonymousObservable.new do |observer|
-        gate = Monitor.new
-        stopped = false
-        group = CompositeSubscription.new
-
-        new_obs = Observer.configure do |o|
-          o.on_next do |inner_source|
-            inner_subscription = SingleAssignmentSubscription.new
-            group << inner_subscription
-
-            inner_obs = Observer.configure do |io|
-              io.on_next { |x| gate.synchronize { observer.on_next x } }
-              io.on_error { |err| gate.synchronize { observer.on_error err } }
-              io.on_completed do
-                group.delete inner_subscription
-                gate.synchronize { observer.on_completed } if stopped && group.length == 1
-              end
-            end
-
-            inner_subscription.subscription = inner_source.subscribe inner_obs
-          end
-
-          o.on_error {|err| gate.synchronize { observer.on_error err } }
-
-          o.on_completed do
-            stopped = true
-            gate.synchronize { observer.on_completed } if group.length == 1
-          end
-        end
-
-        group << subscribe(new_obs)
-      end
+      merge_concurrent(0)
     end
 
     # Concatenates the second observable sequence to the first observable sequence upon successful or exceptional termination of the first.

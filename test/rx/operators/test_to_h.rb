@@ -92,7 +92,7 @@ class TestOperatorToH < Minitest::Test
 
   def test_selector_configuration_fails_immediately
     source = cold('  -|')
-    assert_raises(RuntimeError) do
+    assert_raises(MyError) do
       source.to_h { |_| raise error }
     end
   end
