@@ -37,10 +37,11 @@ class TestDefaultScheduler < Minitest::Test
   end
 
   def test_schedule_recursive_absolute_non_recursive
-    task = ->(a) { a.call(Time.now) }
+    n = 0
+    task = ->(a) { n += 1 ; a.call(Time.now) }
 
     subscription = @scheduler.schedule_recursive_absolute(Time.now, task)
-    await_criteria(2) { subscription.subscription && subscription.subscription.length == 1 }
+    await_criteria(2) { n >= 3 }
     subscription.unsubscribe
   end
 
