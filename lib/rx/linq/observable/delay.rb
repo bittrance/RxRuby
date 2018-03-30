@@ -36,10 +36,10 @@ module Rx
                 gate.synchronize do
                   _, v = q.shift
                   next_time, _ = q.first
+                  observer.on_next(v)
                 end
-                observer.on_next(v)
                 if next_time.nil? && state == :complete
-                  observer.on_completed
+                  gate.synchronize { observer.on_completed }
                 elsif !next_time.nil? && state != :dead
                   next_due = next_time - scheduler.now
                   this.call(next_due)
@@ -51,13 +51,13 @@ module Rx
           o.on_error do |err|
             state = :dead
             cancelable.unsubscribe
-            observer.on_error(err)
+            gate.synchronize { observer.on_error(err) }
           end
 
           o.on_completed do
             state = :complete
             subscription.unsubscribe if subscription
-            observer.on_completed if q.size == 0
+            gate.synchronize { observer.on_completed if q.size == 0 }
           end
         end
 
