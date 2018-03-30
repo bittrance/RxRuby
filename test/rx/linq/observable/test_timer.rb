@@ -38,15 +38,17 @@ class TestOperatorAsyncTimer < Minitest::Test
   end
 
   def test_emit_value_at_point_in_time
-    Rx::Observable.timer(Time.now).subscribe(@observer)
+    subscription = Rx::Observable.timer(Time.now).subscribe(@observer)
     await_array_length(@observer.messages, 2)
+    subscription.unsubscribe
     expected = [on_next(0, 0), on_completed(0)]
     assert_equal expected, @observer.messages
   end
 
   def test_emit_value_at_repeated_point_in_time
-    Rx::Observable.timer(Time.now, 0.01).subscribe(@observer)
+    subscription = Rx::Observable.timer(Time.now, 0.01).subscribe(@observer)
     await_array_minimum_length(@observer.messages, 3)
+    subscription.unsubscribe
     events = @observer.messages.map {|m|  m.value }
     assert events.all? {|v| Rx::OnNextNotification === v }
     assert_equal [0, 1, 2], events.map {|v| v.value }.slice(0, 3)
