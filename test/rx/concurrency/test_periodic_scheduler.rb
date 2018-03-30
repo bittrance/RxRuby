@@ -20,9 +20,9 @@ class TestPeriodicScheduler < Minitest::Test
     task  = ->(x) { x << 1 }
 
     subscription = @scheduler.schedule_periodic_with_state(state, INTERVAL, task)
-    await_array_length(state, 2, INTERVAL * 2.9)
+    await_array_minimum_length(state, 2)
     subscription.unsubscribe
-    assert_equal(state.length, 2)
+    assert state.length >= 2
   end
 
   def test_periodic_with_state_exceptions
@@ -40,9 +40,9 @@ class TestPeriodicScheduler < Minitest::Test
     task  = ->() { state << 1 }
 
     subscription = @scheduler.schedule_periodic(INTERVAL, task)
-    await_array_length(state, 2, INTERVAL * 2.9)
+    await_array_minimum_length(state, 2)
     subscription.unsubscribe
-    assert_equal(state.length, 2)
+    assert state.length >= 2
   end
 
   def test_periodic_exceptions
