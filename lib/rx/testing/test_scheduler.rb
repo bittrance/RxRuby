@@ -30,7 +30,9 @@ module Rx
     def configure(options = {})
       options.each {|key,_|
         unless [:created, :subscribed, :disposed].include? key
+          # :nocov: #
           raise ArgumentError, "Should be specified whether :created, :subscribed or :disposed, but the #{key.inspect}"
+          # :nocov: #
         end
       }
       o = {

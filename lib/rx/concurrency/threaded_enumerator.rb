@@ -10,11 +10,13 @@ module Rx
     ERROR = Object.new
     DONE = Object.new
 
+    # :nocov: #
     if RUBY_ENGINE == 'jruby'
       def self.new(*args, &block)
         Enumerator.new(*args, &block)
       end
     end
+    # :nocov: #
 
     # ThreadedEnumerator helper class
     class Yielder
