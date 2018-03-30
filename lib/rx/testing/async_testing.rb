@@ -35,7 +35,7 @@ module Rx
     def await(timeout)
       deadline = Time.now + timeout
       while Time.now < deadline
-        sleep timeout / 20
+        sleep Float(timeout) / 20
         return true if yield
       end
       return false
