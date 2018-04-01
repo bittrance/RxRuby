@@ -1,3 +1,3 @@
 module Rx
-  VERSION = '0.5.0.bittrance'
+  VERSION = '0.1.0'
 end
