@@ -13,7 +13,7 @@ jobs:
     - stage: canary
       rvm: 2.4.0
     - stage: test
-      rvm: jruby-19mode
+      rvm: jruby-9.1.17.0
     - stage: test
       rvm: 1.9.3
     - stage: test
